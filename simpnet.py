@@ -27,12 +27,47 @@ class SimpNet(object):
     
     def inference(self):
 
-        conv_relu(
+        conv1 = conv_relu(
             inputs=self.imgs,
-            filters=,
-            k_size=C1_FILTER_SIZE
-
-
+            filters=CONV1_NUM_FILTERS,
+            k_size=CONV1_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_1'
         )
 
-        
+        conv2 = conv_relu(
+            inputs=conv1,
+            filters=CONV2_NUM_FILTERS,
+            k_size=CONV2_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_2'
+        )
+
+        conv3 = conv_relu(
+            inputs=conv2,
+            filters=CONV3_NUM_FILTERS,
+            k_size=CONV3_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_3'
+        )
+
+        conv4 = conv_relu(
+            inputs=conv3, 
+            filters=CONV4_NUM_FILTERS,
+            k_size=CONV4_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_4'
+        )
+
+        conv5 = conv_relu(
+            inputs=conv4,
+            filters=CONV5_NUM_FILTERS,
+            k_size=CONV5_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_5'
+        )
