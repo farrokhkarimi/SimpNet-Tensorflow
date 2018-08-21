@@ -71,3 +71,64 @@ class SimpNet(object):
             padding='SAME',
             scope_name='conv_5'
         )
+
+        pool1 = maxpool(
+            inputs=conv5,
+            k_size=MAXPOOL1_SIZE,
+            stride=1,
+            padding='VALID',
+            scope_name='pool_1'
+        )
+
+        conv6 = conv_relu(
+            inputs=pool1,
+            filters=CONV6_NUM_FILTERS,
+            k_size=CONV6_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_6'
+        )
+
+        conv7 = conv_relu(
+            inputs=conv6,
+            filters=CONV7_NUM_FILTERS,
+            k_size=CONV7_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_7'
+        )
+
+        conv8 = conv_relu(
+            inputs=conv7,
+            filters=CONV8_NUM_FILTERS,
+            k_size=CONV8_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_8'
+        )
+
+        conv9 = conv_relu(
+            inputs=conv8,
+            filters=CONV9_NUM_FILTERS,
+            k_size=CONV9_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_9'
+        )
+
+        conv10 = conv_relu(
+            inputs=conv9,
+            filters=CONV10_NUM_FILTERS,
+            k_size=CONV10_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_10'
+        )
+
+        pool2 = maxpool(
+            inputs=conv10,
+            k_size=MAXPOOL2_SIZE,
+            stride=1,
+            padding='VALID',
+            scope_name='pool_2'
+        )
