@@ -1,3 +1,12 @@
+# ========================================
+# [] File Name : cnn_util.py
+#
+# [] Creation Date : Aug 2018
+#
+# [] Author : Ali Gholami
+#
+# ========================================
+
 import tensorflow as tf
 
 
@@ -36,5 +45,5 @@ def fully_connected(inputs, out_dim, scope_name):
 
     return fc
 
-    
+
 
