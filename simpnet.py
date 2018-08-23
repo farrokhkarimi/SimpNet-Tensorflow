@@ -8,7 +8,7 @@
 # ========================================
 
 import tensorlfow as tf
-from cnn_util import conv_relu, maxpool, fully_connected
+from cnn_util import conv_bn_sc_relu, maxpool, fully_connected
 from cnn_config import *
 
 class SimpNet(object):
@@ -27,7 +27,7 @@ class SimpNet(object):
     
     def inference(self):
 
-        conv1 = conv_relu(
+        conv1 = conv_bn_sc_relu(
             inputs=self.imgs,
             filters=CONV1_NUM_FILTERS,
             k_size=CONV1_FILTER_SIZE,
@@ -36,7 +36,7 @@ class SimpNet(object):
             scope_name='conv_1'
         )
 
-        conv2 = conv_relu(
+        conv2 = conv_bn_sc_relu(
             inputs=conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
@@ -45,7 +45,7 @@ class SimpNet(object):
             scope_name='conv_2'
         )
 
-        conv3 = conv_relu(
+        conv3 = conv_bn_sc_relu(
             inputs=conv2,
             filters=CONV3_NUM_FILTERS,
             k_size=CONV3_FILTER_SIZE,
@@ -54,7 +54,7 @@ class SimpNet(object):
             scope_name='conv_3'
         )
 
-        conv4 = conv_relu(
+        conv4 = conv_bn_sc_relu(
             inputs=conv3, 
             filters=CONV4_NUM_FILTERS,
             k_size=CONV4_FILTER_SIZE,
@@ -63,7 +63,7 @@ class SimpNet(object):
             scope_name='conv_4'
         )
 
-        conv5 = conv_relu(
+        conv5 = conv_bn_sc_relu(
             inputs=conv4,
             filters=CONV5_NUM_FILTERS,
             k_size=CONV5_FILTER_SIZE,
@@ -80,7 +80,7 @@ class SimpNet(object):
             scope_name='pool_1'
         )
 
-        conv6 = conv_relu(
+        conv6 = conv_bn_sc_relu(
             inputs=pool1,
             filters=CONV6_NUM_FILTERS,
             k_size=CONV6_FILTER_SIZE,
@@ -89,7 +89,7 @@ class SimpNet(object):
             scope_name='conv_6'
         )
 
-        conv7 = conv_relu(
+        conv7 = conv_bn_sc_relu(
             inputs=conv6,
             filters=CONV7_NUM_FILTERS,
             k_size=CONV7_FILTER_SIZE,
@@ -98,7 +98,7 @@ class SimpNet(object):
             scope_name='conv_7'
         )
 
-        conv8 = conv_relu(
+        conv8 = conv_bn_sc_relu(
             inputs=conv7,
             filters=CONV8_NUM_FILTERS,
             k_size=CONV8_FILTER_SIZE,
@@ -107,7 +107,7 @@ class SimpNet(object):
             scope_name='conv_8'
         )
 
-        conv9 = conv_relu(
+        conv9 = conv_bn_sc_relu(
             inputs=conv8,
             filters=CONV9_NUM_FILTERS,
             k_size=CONV9_FILTER_SIZE,
@@ -116,7 +116,7 @@ class SimpNet(object):
             scope_name='conv_9'
         )
 
-        conv10 = conv_relu(
+        conv10 = conv_bn_sc_relu(
             inputs=conv9,
             filters=CONV10_NUM_FILTERS,
             k_size=CONV10_FILTER_SIZE,
@@ -133,7 +133,7 @@ class SimpNet(object):
             scope_name='pool_2'
         )
 
-        conv11 = conv_relu(
+        conv11 = conv_bn_sc_relu(
             inputs=pool2,
             filters=CONV11_NUM_FILTERS,
             k_size=CONV11_FILTER_SIZE,
@@ -142,7 +142,7 @@ class SimpNet(object):
             scope_name='conv_11'
         )
 
-        conv12 = conv_relu(
+        conv12 = conv_bn_sc_relu(
             inputs=conv11,
             filters=CONV11_NUM_FILTERS,
             k_size=CONV11_FILTER_SIZE,
@@ -151,7 +151,7 @@ class SimpNet(object):
             scope_name='conv_12',
         )
 
-        conv13 = conv_relu(
+        conv13 = conv_bn_sc_relu(
             inputs=conv12, 
             filters=CONV13_NUM_FILTERS,
             k_size=CONV13_FILTER_SIZE,
@@ -167,5 +167,4 @@ class SimpNet(object):
             padding='VALID',
             scope_name='global_pool'
         )
-        
         
