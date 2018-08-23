@@ -45,5 +45,18 @@ def fully_connected(inputs, out_dim, scope_name):
 
     return fc
 
+def scale(inputs, scope_name):
+
+    with tf.variable_scope(scope_name, reuse=tf.AUTO_REVERSE) as scope:
+
+        in_dim = inputs.shape[-1]
+        alpha = tf.get_variable(name='alpha', shape=(in_dim, ), trainable=True)
+        beta = tf.get_variable(name='beta', shape=(in_dim, ), trainable=True)
+
+        scaled_input = alpha * input + beta
+
+    return scaled_input
+
+
 
 
