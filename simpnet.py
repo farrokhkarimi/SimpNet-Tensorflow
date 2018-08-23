@@ -75,7 +75,7 @@ class SimpNet(object):
         pool1 = maxpool(
             inputs=conv5,
             k_size=MAXPOOL1_SIZE,
-            stride=1,
+            stride=2,
             padding='VALID',
             scope_name='pool_1'
         )
@@ -128,7 +128,7 @@ class SimpNet(object):
         pool2 = maxpool(
             inputs=conv10,
             k_size=MAXPOOL2_SIZE,
-            stride=1,
+            stride=2,
             padding='VALID',
             scope_name='pool_2'
         )
@@ -163,7 +163,7 @@ class SimpNet(object):
         global_pool = maxpool(
             inputs=conv13,
             k_size=MAXPOOL3_SIZE,
-            stride=1,
+            stride=2,
             padding='VALID',
             scope_name='global_pool'
         )

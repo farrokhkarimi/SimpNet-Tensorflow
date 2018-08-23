@@ -64,4 +64,26 @@ def scale(inputs, scope_name):
 
     return scaled_input
 
+def saf_pool(inputs, k_size, stride, padding, scope_name):
+
+    with tf.variable_scope(scope_name, tf.AUTO_REUSE) as scope:
+
+        # Perform a Maxpool
+        pooled = maxpool(
+            inputs=inputs,
+            k_size=k_size,
+            stride=stride,
+            padding=padding,
+            scope_name=scope_name
+        )
+
+        # Perform a Dropout
+        saf_pooled = tf.nn.dropout(
+            x=pooled,
+            keep_prob=0.8
+        )
+
+    return saf_pooled
+
+
 
