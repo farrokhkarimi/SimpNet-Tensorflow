@@ -10,7 +10,7 @@
 import tensorflow as tf
 
 
-def conv_relu(inputs, filters, k_size, stride, padding, scope_name):
+def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
 
     with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
 
@@ -21,7 +21,14 @@ def conv_relu(inputs, filters, k_size, stride, padding, scope_name):
 
         conv = tf.nn.conv2d(input=inputs, filter=kernel, strides=[1, stride, stride, 1], padding=padding, use_cudnn_on_gpu=True)
     
-    return tf.nn.relu(conv + biases, name=scope.name)
+        # Perform a batch normalization
+        norm = tf.layers.batch_normalization(inputs=conv)
+
+        # Scale the normalized batch
+        scaled_batch = scale(inputs=norm, 'batch_norm_scaler')
+
+    # Perform a relu and return
+    return tf.nn.relu(scaled_batch + biases, name=scope.name)
 
 def maxpool(inputs, k_size, stride, padding, scope_name):
 
@@ -47,7 +54,7 @@ def fully_connected(inputs, out_dim, scope_name):
 
 def scale(inputs, scope_name):
 
-    with tf.variable_scope(scope_name, reuse=tf.AUTO_REVERSE) as scope:
+    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
 
         in_dim = inputs.shape[-1]
         alpha = tf.get_variable(name='alpha', shape=(in_dim, ), trainable=True)
@@ -56,7 +63,5 @@ def scale(inputs, scope_name):
         scaled_input = alpha * input + beta
 
     return scaled_input
-
-
 
 
