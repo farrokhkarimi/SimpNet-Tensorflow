@@ -132,3 +132,40 @@ class SimpNet(object):
             padding='VALID',
             scope_name='pool_2'
         )
+
+        conv11 = conv_relu(
+            inputs=pool2,
+            filters=CONV11_NUM_FILTERS,
+            k_size=CONV11_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_11'
+        )
+
+        conv12 = conv_relu(
+            inputs=conv11,
+            filters=CONV11_NUM_FILTERS,
+            k_size=CONV11_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_12',
+        )
+
+        conv13 = conv_relu(
+            inputs=conv12, 
+            filters=CONV13_NUM_FILTERS,
+            k_size=CONV13_FILTER_SIZE,
+            stride=1,
+            padding='SAME',
+            scope_name='conv_13'
+        )
+
+        global_pool = maxpool(
+            inputs=conv13,
+            k_size=MAXPOOL3_SIZE,
+            stride=1,
+            padding='VALID',
+            scope_name='global_pool'
+        )
+        
+        
