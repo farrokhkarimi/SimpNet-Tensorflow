@@ -7,7 +7,7 @@
 #
 # ========================================
 
-import tensorlfow as tf
+import tensorflow as tf
 from cnn_util import conv_bn_sc_relu, saf_pool, fully_connected
 from cnn_config import *
 
