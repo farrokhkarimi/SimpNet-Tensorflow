@@ -8,7 +8,7 @@
 # ========================================
 
 import tensorlfow as tf
-from cnn_util import conv_bn_sc_relu, maxpool, fully_connected
+from cnn_util import conv_bn_sc_relu, saf_pool, fully_connected
 from cnn_config import *
 
 class SimpNet(object):
@@ -72,12 +72,12 @@ class SimpNet(object):
             scope_name='conv_5'
         )
 
-        pool1 = maxpool(
+        pool1 = saf_pool(
             inputs=conv5,
             k_size=MAXPOOL1_SIZE,
             stride=2,
             padding='VALID',
-            scope_name='pool_1'
+            scope_name='saf_pool_1'
         )
 
         conv6 = conv_bn_sc_relu(
@@ -125,12 +125,12 @@ class SimpNet(object):
             scope_name='conv_10'
         )
 
-        pool2 = maxpool(
+        pool2 = saf_pool(
             inputs=conv10,
             k_size=MAXPOOL2_SIZE,
             stride=2,
             padding='VALID',
-            scope_name='pool_2'
+            scope_name='saf_pool_2'
         )
 
         conv11 = conv_bn_sc_relu(
@@ -160,11 +160,11 @@ class SimpNet(object):
             scope_name='conv_13'
         )
 
-        global_pool = maxpool(
+        global_pool = saf_pool(
             inputs=conv13,
             k_size=MAXPOOL3_SIZE,
             stride=2,
             padding='VALID',
-            scope_name='global_pool'
+            scope_name='global_saf_pool'
         )
         
