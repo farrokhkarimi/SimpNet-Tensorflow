@@ -197,6 +197,7 @@ class SimpNet(object):
         final_fc = tf.layers.dense(
             inputs=global_pool,
             units=self.n_classes,
+            activation=tf.nn.softmax,
             name='fully_connected'
         )
         

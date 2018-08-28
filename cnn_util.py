@@ -37,21 +37,6 @@ def maxpool(inputs, k_size, stride, padding, scope_name):
         
     return pool
 
-
-def fully_connected(inputs, out_dim, scope_name):
-
-    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
-
-        in_dim = inputs.shape[-1]
-
-        weights = tf.get_variable('weights', shape=[in_dim, out_dim], initializer=tf.truncated_normal_initializer())
-
-        biases = tf.get_variable('biases', shape=[out_dim], initializer=tf.constant_initializer(0.0))
-
-        fc = tf.matmul(inputs, weights) + biases
-
-    return fc
-
 def scale(inputs, scope_name):
 
     with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
