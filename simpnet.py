@@ -223,4 +223,11 @@ class SimpNet(object):
                 name='Adam'
             ).minimize(self.loss_val, global_step=self.gstep)
 
-    
+    def summary(self):
+
+        with tf.name_scope('summary'):
+            tf.summary.scalar(name='loss', tensor=self.loss_val)
+            tf.summary.scalar(name='accuracy', tensor=self.accuracy)
+            tf.summary.histogram(name='loss histogram', tensor=self.loss_val)
+            self.summary_op = tf.summary.merge_all()
+            
