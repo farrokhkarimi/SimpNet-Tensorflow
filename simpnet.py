@@ -8,7 +8,7 @@
 # ========================================
 
 import tensorflow as tf
-from cnn_util import conv_bn_sc_relu, saf_pool, fully_connected
+from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from data_util import *
 
@@ -49,7 +49,7 @@ class SimpNet(object):
     def inference(self):
 
         conv1 = conv_bn_sc_relu(
-            inputs=self.imgs,
+            inputs=self.img,
             filters=CONV1_NUM_FILTERS,
             k_size=CONV1_FILTER_SIZE,
             stride=1,
@@ -194,10 +194,17 @@ class SimpNet(object):
             name='flatten_input'
         )
 
+        # Softmax is applied in the loss function when softmax_cross_entropy_with_logits is called
         self.logits = tf.layers.dense(
             inputs=flattened,
             units=self.n_classes,
-            activation=tf.nn.softmax,
             name='fully_connected'
         )
-        
+    
+
+    def loss(self):
+
+        with tf.name_scope('loss'):
+            entropy = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits)
+            self.loss = tf.reduce_mean(entropy, name='loss')
+
