@@ -206,5 +206,5 @@ class SimpNet(object):
 
         with tf.name_scope('loss'):
             entropy = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits)
-            self.loss = tf.reduce_mean(entropy, name='loss')
+            self.loss_val = tf.reduce_mean(entropy, name='loss')
 
