@@ -10,6 +10,7 @@
 import tensorflow as tf
 from cnn_util import conv_bn_sc_relu, saf_pool, fully_connected
 from cnn_config import *
+from data_util import *
 
 class SimpNet(object):
 
@@ -21,8 +22,27 @@ class SimpNet(object):
         # Learning rate
         self.learning_rate = 0.001
 
-        # Data pipeline
-        self.imgs = None
+        # Setup the data path (folder should contain train and test folders inside itself)
+        self.data_path = './data'
+
+        # Number of images in each batch
+        self.batch_size = 128
+
+    def get_data(self):
+        
+        with tf.name_scope('data'):
+            
+            train_data, test_data = load_image_data(dir_path=self.data_path, batch_size=self.batch_size)
+            iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, train_data.output_shapes)
+
+            img, self.label = iterator.get_next()
+
+            self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
+
+            self.train_init = iterator.make_initializer(train_data)
+            self.test_init = iterator.make_initializer(test_data)
+        
+
 
     
     def inference(self):

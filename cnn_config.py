@@ -5,7 +5,11 @@
 #
 # [] Author : Ali Gholami
 #
-# ========================================
+# =======================================
+
+CNN_INPUT_HEIGHT = 256
+CNN_INPUT_WIDTH = 256
+CNN_INPUT_CHANNELS = 1
 
 CONV1_NUM_FILTERS = 66
 CONV1_FILTER_SIZE = 3
