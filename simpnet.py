@@ -28,6 +28,9 @@ class SimpNet(object):
         # Number of images in each batch
         self.batch_size = 128
 
+        # Number of classes
+        self.n_classes = 15
+
     def get_data(self):
         
         with tf.name_scope('data'):
@@ -41,8 +44,6 @@ class SimpNet(object):
 
             self.train_init = iterator.make_initializer(train_data)
             self.test_init = iterator.make_initializer(test_data)
-        
-
 
     
     def inference(self):
@@ -186,5 +187,16 @@ class SimpNet(object):
             stride=2,
             padding='VALID',
             scope_name='global_saf_pool'
+        )
+
+        flattened = tf.layers.flatten(
+            inputs=global_pool,
+            name='flatten_input'
+        )
+
+        final_fc = tf.layers.dense(
+            inputs=global_pool,
+            units=self.n_classes,
+            name='fully_connected'
         )
         
