@@ -231,3 +231,8 @@ class SimpNet(object):
             tf.summary.histogram(name='loss histogram', tensor=self.loss_val)
             self.summary_op = tf.summary.merge_all()
             
+    def ttrain(self):
+        
+    def ttest(self):
+
+
