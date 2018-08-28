@@ -31,6 +31,9 @@ class SimpNet(object):
         # Number of classes
         self.n_classes = 15
 
+        # Global step (times the graph seen the data)
+        self.gstep = 0
+
     def get_data(self):
         
         with tf.name_scope('data'):
@@ -208,3 +211,16 @@ class SimpNet(object):
             entropy = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits)
             self.loss_val = tf.reduce_mean(entropy, name='loss')
 
+
+    def optimize(self):
+        
+        with tf.name_scope('optimizer'):
+            self.opt = tf.train.AdamOptimizer(
+                learning_rate=self.learning_rate,
+                beta1=0.9,
+                beta2=0.999,
+                epsilon=1e-8,
+                name='Adam'
+            ).minimize(self.loss_val, global_step=self.gstep)
+
+    
