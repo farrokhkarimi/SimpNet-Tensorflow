@@ -33,7 +33,7 @@ class SimpNet(object):
         self.n_classes = 15
 
         # Global step (times the graph seen the data)
-        self.gstep = 0
+        self.gstep = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
 
         # Shows the overall graph status (Trainig vs Testing)
         self.training = True
@@ -266,6 +266,9 @@ class SimpNet(object):
         except tf.errors.OutOfRangeError as err:
             pass
 
+        # Save learned weights
+        saver.save(sess, 'checkpoints/simpnet_train', step)
+
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
         print("Took {0} seconds...".format(time.time() - start_time))
     
@@ -293,10 +296,11 @@ class SimpNet(object):
         except tf.errors.OutOfRangeError as err:
             pass
 
+
         print("Accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
 
 
-    def train(self, epochs):
+    def train(self, n_epochs):
     
         safe_mkdir('checkpoints')
         safe_mkdir('checkpoints/simpnet_train')
@@ -311,11 +315,11 @@ class SimpNet(object):
             saver = tf.train.Saver()
             
             # Restore the checkpoints (in case of any!)
-            saver.restore(sess, os.path.dirname('checkpoints/simpnet_train/checkpoint'))
+            saver.restore(sess, os.path.dirname('checkpoints/simpnet_train'))
             
             step = self.gstep.eval()
 
-            for epoch in range(epochs):
+            for epoch in range(n_epochs):
                 # Train the model for one epoch
                 step = self.train_network_one_epoch(
                     sess=sess,
@@ -336,7 +340,7 @@ class SimpNet(object):
                 )
         
         writer.close()
-        
+
 
             
 
