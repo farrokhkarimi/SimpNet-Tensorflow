@@ -317,5 +317,13 @@ class SimpNet(object):
                 )
         
                 # Evaluate the model after each epoch
-                
+                self.evaluate_network(
+                    sess=sess, 
+                    init=self.test_init,
+                    writer=writer,
+                    epoch=epoch,
+                    step=step
+                )
+
+            
 

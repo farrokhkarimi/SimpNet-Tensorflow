@@ -9,6 +9,7 @@
 
 import numpy as np
 import tensorflow as tf
+import os
 
 def load_image_data(dir_path, batch_size):
 
@@ -16,5 +17,14 @@ def load_image_data(dir_path, batch_size):
     test_data = np.array([2])
 
     return train_data, test_data
+
+
+def safe_mkdir(path):
+
+    try:
+        os.mkdir(path)
+    except OSError as err:
+        pass
+
 
 
