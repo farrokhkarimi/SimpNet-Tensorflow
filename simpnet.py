@@ -298,23 +298,24 @@ class SimpNet(object):
 
     def train(self, epochs):
     
-    # Load the model
+        # Load the model
 
-    with tf.Session() as sess:
+        with tf.Session() as sess:
 
+            
+            step = self.gstep.eval()
+
+            for epoch in range(epochs):
+                # Train the model for one epoch
+                step = self.train_network_one_epoch(
+                    sess=sess,
+                    init=self.train_init,
+                    saver=saver,
+                    writer=writer,
+                    epoch=epoch,
+                    step=step
+                )
         
-        step = self.gstep.eval()
-
-        for epoch in range(epochs):
-            # Train the model for one epoch
-            step = self.train_network_one_epoch(
-                sess=sess,
-                init=self.train_init,
-                saver=saver,
-                writer=writer,
-                epoch=epoch,
-                step=step
-            )
-
-            # Evaluate the model after each epoch
+                # Evaluate the model after each epoch
+                
 
