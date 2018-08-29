@@ -37,6 +37,9 @@ class SimpNet(object):
 
         # Shows the overall graph status (Trainig vs Testing)
         self.training = True
+        
+        # Which steps show the loss in each epoch
+        self.skip_steps = 10
 
     def get_data(self):
         
@@ -253,7 +256,9 @@ class SimpNet(object):
 
                 total_loss += step_loss
                 n_batches += 1
+                writer.add_summary(step_summary, gstep=self.gstep)
                 
+
         except tf.errors.OutOfRangeError as err:
             pass
 
