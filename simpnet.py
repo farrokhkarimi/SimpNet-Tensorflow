@@ -11,6 +11,7 @@ import tensorflow as tf
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from data_util import *
+import time
 
 class SimpNet(object):
 
@@ -33,6 +34,9 @@ class SimpNet(object):
 
         # Global step (times the graph seen the data)
         self.gstep = 0
+
+        # Shows the overall graph status (Trainig vs Testing)
+        self.training = True
 
     def get_data(self):
         
@@ -231,8 +235,29 @@ class SimpNet(object):
             tf.summary.histogram(name='loss histogram', tensor=self.loss_val)
             self.summary_op = tf.summary.merge_all()
             
-    def ttrain(self):
+    def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
+        start_time = time.time()
         
+        # Initialize training (ready data)
+        sess.run(init)
+        self.training = True
+
+        n_batches = 0
+        total_loss = 0
+
+        try:
+            while True:
+
+                # Run the training graph nodes
+                _, step_loss, step_summary = sess.run([self.opt, self.loss_val, self.summary_op])
+
+                total_loss += step_loss
+                n_batches += 1
+                
+        except tf.errors.OutOfRangeError as err:
+            pass
+
+
     def ttest(self):
 
 
