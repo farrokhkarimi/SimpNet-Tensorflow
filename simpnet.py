@@ -257,11 +257,15 @@ class SimpNet(object):
                 total_loss += step_loss
                 n_batches += 1
                 writer.add_summary(step_summary, gstep=self.gstep)
-                
+
+                if step + 1 % self.skip_steps == 0:
+                    print("loss at step {0}: {1}".format(step, step_loss))
 
         except tf.errors.OutOfRangeError as err:
             pass
 
+        print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
+        print("Took {0} seconds...".format(time.time() - start_time))
 
     def ttest(self):
 
