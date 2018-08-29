@@ -271,7 +271,7 @@ class SimpNet(object):
     
         return step
 
-    def evaluate_network(self, sess, init, saver, writer, epoch, step):
+    def evaluate_network(self, sess, init, writer, epoch, step):
 
         start_time = time.time()
 
@@ -298,10 +298,22 @@ class SimpNet(object):
 
     def train(self, epochs):
     
-        # Load the model
+        safe_mkdir('checkpoints')
+        safe_mkdir('checkpoints/simpnet_train')
+        writer = tf.summary.FileWriter('./graphs/simpnet', graph=tf.get_default_graph())
 
         with tf.Session() as sess:
+            
+            # Initialize the variables
+            sess.run(tf.global_variables_initializer())
 
+            # Check if there exists a training checkpoint
+            saver = tf.train.Saver()
+            
+            ckpt = tf.train.get_checkpoint_state(os.path.dirname('checkpoints/simpnet_train/checkpoint'))
+
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
             
             step = self.gstep.eval()
 
