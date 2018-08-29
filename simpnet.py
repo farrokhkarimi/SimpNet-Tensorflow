@@ -41,6 +41,8 @@ class SimpNet(object):
         # Which steps show the loss in each epoch
         self.skip_steps = 10
 
+        self.n_test = 1000
+
     def get_data(self):
         
         with tf.name_scope('data'):
@@ -256,7 +258,7 @@ class SimpNet(object):
 
                 total_loss += step_loss
                 n_batches += 1
-                writer.add_summary(step_summary, gstep=self.gstep)
+                writer.add_summary(step_summary, global_step=self.gstep)
 
                 if step + 1 % self.skip_steps == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
@@ -267,6 +269,28 @@ class SimpNet(object):
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
         print("Took {0} seconds...".format(time.time() - start_time))
 
-    def ttest(self):
+    def teval(self, sess, init, saver, writer, epoch, step):
+
+        start_time = time.time()
+
+        # Initialize the testing (ready test data)
+        sess.run(init)
+        self.traininig = False
+
+        total_accuracy = 0 
+
+        try:
+            while True:
+
+                # Test the network 
+                batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
+
+                total_truth += batch_accuracy
+                writer.add_summary(step_summary, global_step=self.gstep)
+
+        except tf.errors.OutOfRangeError as err:
+            pass
+
+        print("Accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
 
 
