@@ -269,7 +269,7 @@ class SimpNet(object):
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
         print("Took {0} seconds...".format(time.time() - start_time))
 
-    def teval(self, sess, init, saver, writer, epoch, step):
+    def evaluate_network(self, sess, init, saver, writer, epoch, step):
 
         start_time = time.time()
 
@@ -277,7 +277,7 @@ class SimpNet(object):
         sess.run(init)
         self.traininig = False
 
-        total_accuracy = 0 
+        total_truth = 0 
 
         try:
             while True:
@@ -292,5 +292,6 @@ class SimpNet(object):
             pass
 
         print("Accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
+
 
 
