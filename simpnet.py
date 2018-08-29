@@ -268,6 +268,8 @@ class SimpNet(object):
 
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
         print("Took {0} seconds...".format(time.time() - start_time))
+    
+        return step
 
     def evaluate_network(self, sess, init, saver, writer, epoch, step):
 
@@ -294,4 +296,25 @@ class SimpNet(object):
         print("Accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
 
 
+    def train(self, epochs):
+    
+    # Load the model
+
+    with tf.Session() as sess:
+
+        
+        step = self.gstep.eval()
+
+        for epoch in range(epochs):
+            # Train the model for one epoch
+            step = self.train_network_one_epoch(
+                sess=sess,
+                init=self.train_init,
+                saver=saver,
+                writer=writer,
+                epoch=epoch,
+                step=step
+            )
+
+            # Evaluate the model after each epoch
 
