@@ -218,6 +218,8 @@ class SimpNet(object):
 
         with tf.name_scope('loss'):
             entropy = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits)
+            
+            # Loss is mean of error on all dimensions
             self.loss_val = tf.reduce_mean(entropy, name='loss')
 
 
@@ -235,11 +237,20 @@ class SimpNet(object):
     def summary(self):
 
         with tf.name_scope('summary'):
-            tf.summary.scalar(name='loss', tensor=self.loss_val)
-            tf.summary.scalar(name='accuracy', tensor=self.accuracy)
-            tf.summary.histogram(name='loss histogram', tensor=self.loss_val)
+            tf.summary.scalar('loss', self.loss_val)
+            tf.summary.scalar('accuracy', self.accuracy)
+            tf.summary.histogram('loss histogram', self.loss_val)
             self.summary_op = tf.summary.merge_all()
             
+    def eval(self):
+        
+        with tf.name_scope('predict'):  
+            preds = tf.nn.softmax(self.logits)
+            correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(self.label, 1))
+
+            # Summation of all probabilities of all correct predictions
+            self.accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
+    
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
         
@@ -263,7 +274,7 @@ class SimpNet(object):
                 if step + 1 % self.skip_steps == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
 
-        except tf.errors.OutOfRangeError as err:
+        except tf.errors.OutOfRangeError:
             pass
 
         # Save learned weights
@@ -293,7 +304,7 @@ class SimpNet(object):
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=self.gstep)
 
-        except tf.errors.OutOfRangeError as err:
+        except tf.errors.OutOfRangeError:
             pass
 
 
