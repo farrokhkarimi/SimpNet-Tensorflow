@@ -114,7 +114,7 @@ class SimpNet(object):
         )
 
         conv6 = conv_bn_sc_relu(
-            inputs=pool1,
+            inputs=pool1, 
             filters=CONV6_NUM_FILTERS,
             k_size=CONV6_FILTER_SIZE,
             stride=1,
