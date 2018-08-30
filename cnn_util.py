@@ -15,7 +15,7 @@ def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
     with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
 
         in_channels = inputs.shape[-1]
-
+        
         kernel = tf.get_variable('kernel', [k_size, k_size, in_channels, filters], initializer=tf.truncated_normal_initializer())
         biases = tf.get_variable('biases', [filters], initializer=tf.random_normal_initializer())
 

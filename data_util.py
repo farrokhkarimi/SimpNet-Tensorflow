@@ -20,6 +20,8 @@ def parse_data(path, dataset, flatten):
     # Load the label data
     label_file = pd.read_csv(path + 'Data_Entry_2017.csv')
 
+    label_file = label_file['Finding Labels']
+
 
     
     label_file = os.path.join(path, dataset + '-labels-idx1-ubyte')
