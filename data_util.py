@@ -14,9 +14,14 @@ import os
 import struct
 
 def parse_data(path, dataset, flatten):
-    if dataset != 'train' and dataset != 'test':
-        raise NameError('dataset must be train or test')
+    if dataset != 'train' and dataset != 'validation':
+        raise NameError('dataset must be train or validation.')
 
+    # Load the label data
+    label_file = pd.read_csv(path + 'Data_Entry_2017.csv')
+
+
+    
     label_file = os.path.join(path, dataset + '-labels-idx1-ubyte')
     with open(label_file, 'rb') as file:
         _, num = struct.unpack(">II", file.read(8))
