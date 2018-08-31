@@ -58,6 +58,14 @@ class SimpNet(object):
             self.train_init = iterator.make_initializer(train_data)
             self.test_init = iterator.make_initializer(test_data)
 
+    def build_network_graph(self):
+
+        self.get_data()
+        self.inference()
+        self.loss()
+        self.optimize()
+        self.eval()
+        self.summary()
     
     def inference(self):
 
