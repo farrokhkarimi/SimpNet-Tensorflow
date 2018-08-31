@@ -14,33 +14,68 @@ import os
 from glob import glob
 import struct
 import matplotlib.pyplot as plt
+import cv2
 
 def parse_data(path, dataset, flatten):
     if dataset != 'train' and dataset != 'validation':
         raise NameError('dataset must be train or validation.')
 
-    # Load the label data
-    label_file = pd.read_csv(path + 'Data_Entry_2017.csv')
+    # Load the data
+    DATA_ROOT = 'data/'
+    train_list = pd.read_csv(DATA_ROOT + 'Data_Entry_2017.csv')
 
-    label_file = label_file['Finding Labels']
+    # Scan the directory of images
+    train_images = {os.path.basename(x): x for x in 
+                    glob(os.path.join(DATA_ROOT, 'images*', '*.png'))}
 
-    
-    label_file = os.path.join(path, dataset + '-labels-idx1-ubyte')
-    with open(label_file, 'rb') as file:
-        _, num = struct.unpack(">II", file.read(8))
-        labels = np.fromfile(file, dtype=np.int8) #int8
-        new_labels = np.zeros((num, 10))
-        new_labels[np.arange(num), labels] = 1
-    
-    img_file = os.path.join(path, dataset + '-images-idx3-ubyte')
-    with open(img_file, 'rb') as file:
-        _, num, rows, cols = struct.unpack(">IIII", file.read(16))
-        imgs = np.fromfile(file, dtype=np.uint8).reshape(num, rows, cols) #uint8
-        imgs = imgs.astype(np.float32) / 255.0
-        if flatten:
-            imgs = imgs.reshape([num, -1])
+    print('Scans found:', len(train_images), ', Total Headers', train_list.shape[0])
 
-    return imgs, new_labels
+    # Convert the labels into the binary format
+    n_classes = train_list['Finding Labels'].value_counts()[:15]
+    # print("Number of classes {0}".format(n_classes))
+    fig, ax1 = plt.subplots(1,1,figsize = (12, 8))
+    ax1.bar(np.arange(len(n_classes))+0.5, n_classes)
+    ax1.set_xticks(np.arange(len(n_classes))+0.5)
+    _ = ax1.set_xticklabels(n_classes.index, rotation = 90)
+    # plt.show()
+
+    train_list['Finding Labels'] = train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+    from itertools import chain
+    all_labels = np.unique(list(chain(*train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+    all_labels = [x for x in all_labels if len(x)>0]
+    # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+    for c_label in all_labels:
+        if len(c_label)>1: # leave out empty labels
+            train_list[c_label] = train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+
+    # print(train_list.columns)
+
+    # since the dataset is very unbiased, we can resample it to be a more reasonable collection
+    # weight is 0.1 + number of findings
+    sample_weights = train_list['Finding Labels'].map(lambda x: len(x.split('|')) if len(x)>0 else 0).values + 4e-2
+    sample_weights /= sample_weights.sum()
+    train_list = train_list.sample(40000, weights=sample_weights)
+
+    label_counts = train_list['Finding Labels'].value_counts()[:15]
+    label_counts = 100*np.mean(train_list[all_labels].values,0)
+    # train_list['disease_vec'] = train_list.apply(lambda x: [x[all_labels].values], 1).map(lambda x: x[0])
+
+    # new_labels = train_list['disease_vec']
+
+    list_of_imgs = []
+    img_dir = "./data/images/"
+    for img in os.listdir(img_dir):
+        img = os.path.join(img_dir, img)
+        if not img.endswith(".png"):
+            continue
+        a = cv2.imread(img)
+        if a is None:
+            print("Unable to read image", img)
+            continue
+        list_of_imgs.append(a.flatten())
+    imgs = np.array(list_of_imgs)
+
+    return imgs #, new_labels
 
 
 def get_nih_data(dir_path, train_val_split=0.7):
@@ -82,46 +117,4 @@ def safe_mkdir(path):
     except OSError as err:
         pass
 
-
-
-# Load the data
-DATA_ROOT = 'data/'
-train_list = pd.read_csv(DATA_ROOT + 'Data_Entry_2017.csv')
-
-# Scan the directory of images
-train_images = {os.path.basename(x): x for x in 
-                   glob(os.path.join(DATA_ROOT, 'images*', '*.png'))}
-
-print('Scans found:', len(train_images), ', Total Headers', train_list.shape[0])
-
-# Convert the labels into the binary format
-n_classes = train_list['Finding Labels'].value_counts()[:15]
-print("Number of classes {0}".format(n_classes))
-fig, ax1 = plt.subplots(1,1,figsize = (12, 8))
-ax1.bar(np.arange(len(n_classes))+0.5, n_classes)
-ax1.set_xticks(np.arange(len(n_classes))+0.5)
-_ = ax1.set_xticklabels(n_classes.index, rotation = 90)
-# plt.show()
-
-train_list['Finding Labels'] = train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
-from itertools import chain
-all_labels = np.unique(list(chain(*train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
-all_labels = [x for x in all_labels if len(x)>0]
-print('All Labels ({}): {}'.format(len(all_labels), all_labels))
-for c_label in all_labels:
-    if len(c_label)>1: # leave out empty labels
-        train_list[c_label] = train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-
-# print(train_list.columns)
-
-# since the dataset is very unbiased, we can resample it to be a more reasonable collection
-# weight is 0.1 + number of findings
-sample_weights = train_list['Finding Labels'].map(lambda x: len(x.split('|')) if len(x)>0 else 0).values + 4e-2
-sample_weights /= sample_weights.sum()
-train_list = train_list.sample(40000, weights=sample_weights)
-
-label_counts = train_list['Finding Labels'].value_counts()[:15]
-label_counts = 100*np.mean(train_list[all_labels].values,0)
-train_list['disease_vec'] = train_list.apply(lambda x: [x[all_labels].values], 1).map(lambda x: x[0])
-
-print(train_list['disease_vec'])
+print(parse_data('..', 'train', flatten=False))

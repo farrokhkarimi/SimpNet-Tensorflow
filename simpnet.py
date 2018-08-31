@@ -12,6 +12,7 @@ from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from data_util import *
 import time
+import utils
 
 class SimpNet(object):
 
@@ -47,7 +48,7 @@ class SimpNet(object):
         
         with tf.name_scope('data'):
             
-            train_data, test_data = load_image_data(dir_path=self.data_path, batch_size=self.batch_size)
+            train_data, test_data =  utils.get_mnist_dataset(self.batch_size)
             iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
 
             img, self.label = iterator.get_next()
