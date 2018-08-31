@@ -10,7 +10,7 @@
 import tensorflow as tf
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
-from data_util import *
+# from data_util import *
 import time
 import utils
 
@@ -31,7 +31,7 @@ class SimpNet(object):
         self.batch_size = 128
 
         # Number of classes
-        self.n_classes = 15
+        self.n_classes = 10
 
         # Global step (times the graph seen the data)
         self.gstep = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
@@ -42,8 +42,9 @@ class SimpNet(object):
         # Which steps show the loss in each epoch
         self.skip_steps = 10
 
-        self.n_test = 1000
+        self.n_test = 10000
 
+    
     def get_data(self):
         
         with tf.name_scope('data'):
@@ -51,9 +52,11 @@ class SimpNet(object):
             train_data, test_data =  utils.get_mnist_dataset(self.batch_size)
             iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
 
+            print('HELOOO')
             img, self.label = iterator.get_next()
-
+            print("shape before: ", img.shape)
             self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
+            print("shape after: ", img.shape)
 
             self.train_init = iterator.make_initializer(train_data)
             self.test_init = iterator.make_initializer(test_data)
@@ -68,6 +71,8 @@ class SimpNet(object):
         self.summary()
     
     def inference(self):
+        
+        print("INPUT SHAPE: ", self.img.shape)
 
         conv1 = conv_bn_sc_relu(
             inputs=self.img,
