@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import os
+from glob import glob
 import struct
 
 def parse_data(path, dataset, flatten):
@@ -21,7 +22,6 @@ def parse_data(path, dataset, flatten):
     label_file = pd.read_csv(path + 'Data_Entry_2017.csv')
 
     label_file = label_file['Finding Labels']
-
 
     
     label_file = os.path.join(path, dataset + '-labels-idx1-ubyte')
@@ -80,6 +80,18 @@ def safe_mkdir(path):
         os.mkdir(path)
     except OSError as err:
         pass
+
+
+
+# Load the data
+DATA_ROOT = 'data/'
+train_list = pd.read_csv(DATA_ROOT + 'Data_Entry_2017.csv')
+
+# Scan the directory of images
+train_images = {os.path.basename(x): x for x in 
+                   glob(os.path.join(DATA_ROOT, 'images*', '*.png'))}
+
+print('Scans found:', len(train_images), ', Total Headers', train_list.shape[0])
 
 
 
