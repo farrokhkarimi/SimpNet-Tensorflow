@@ -13,6 +13,7 @@ import tensorflow as tf
 import os
 from glob import glob
 import struct
+import matplotlib.pyplot as plt
 
 def parse_data(path, dataset, flatten):
     if dataset != 'train' and dataset != 'validation':
@@ -93,5 +94,11 @@ train_images = {os.path.basename(x): x for x in
 
 print('Scans found:', len(train_images), ', Total Headers', train_list.shape[0])
 
-
-
+# Convert the labels into the binary format
+n_classes = train_list['Finding Labels'].value_counts()[:15]
+print("Number of classes {0}".format(n_classes))
+fig, ax1 = plt.subplots(1,1,figsize = (12, 8))
+ax1.bar(np.arange(len(n_classes))+0.5, n_classes)
+ax1.set_xticks(np.arange(len(n_classes))+0.5)
+_ = ax1.set_xticklabels(n_classes.index, rotation = 90)
+plt.show()
