@@ -101,4 +101,27 @@ fig, ax1 = plt.subplots(1,1,figsize = (12, 8))
 ax1.bar(np.arange(len(n_classes))+0.5, n_classes)
 ax1.set_xticks(np.arange(len(n_classes))+0.5)
 _ = ax1.set_xticklabels(n_classes.index, rotation = 90)
-plt.show()
+# plt.show()
+
+train_list['Finding Labels'] = train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+from itertools import chain
+all_labels = np.unique(list(chain(*train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+all_labels = [x for x in all_labels if len(x)>0]
+print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+for c_label in all_labels:
+    if len(c_label)>1: # leave out empty labels
+        train_list[c_label] = train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+
+# print(train_list.columns)
+
+# since the dataset is very unbiased, we can resample it to be a more reasonable collection
+# weight is 0.1 + number of findings
+sample_weights = train_list['Finding Labels'].map(lambda x: len(x.split('|')) if len(x)>0 else 0).values + 4e-2
+sample_weights /= sample_weights.sum()
+train_list = train_list.sample(40000, weights=sample_weights)
+
+label_counts = train_list['Finding Labels'].value_counts()[:15]
+label_counts = 100*np.mean(train_list[all_labels].values,0)
+train_list['disease_vec'] = train_list.apply(lambda x: [x[all_labels].values], 1).map(lambda x: x[0])
+
+print(train_list['disease_vec'])
