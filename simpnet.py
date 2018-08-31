@@ -361,6 +361,7 @@ class SimpNet(object):
         
         writer.close()
 
-
-            
-
+if __name__ == '__main__':
+    model = SimpNet()
+    model.build_network_graph()
+    model.train(n_epochs=2)
