@@ -12,7 +12,7 @@ from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 # from data_util import *
 import time
-import utils
+import utils as utils
 
 class SimpNet(object):
 
@@ -327,8 +327,8 @@ class SimpNet(object):
 
     def train(self, n_epochs):
     
-        safe_mkdir('checkpoints')
-        safe_mkdir('checkpoints/simpnet_train')
+        utils.safe_mkdir('checkpoints')
+        utils.safe_mkdir('checkpoints/simpnet_train')
         writer = tf.summary.FileWriter('./graphs/simpnet', graph=tf.get_default_graph())
 
         with tf.Session() as sess:
