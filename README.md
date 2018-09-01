@@ -12,7 +12,7 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 
 If you use these models in your research, please cite:
 
-	@article{He2015,
+	@article{SN2018,
 		author = {Seyyed Hossein Hasanpour and Mohammad Rouhani and Mohsen Fayyaz and Mohammad Sabokrou and Ehsan Adeli},
 		title = {Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet},
 		journal = {arXiv preprint arXiv:1802.06205},
