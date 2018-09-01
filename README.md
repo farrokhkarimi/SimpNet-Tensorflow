@@ -1,7 +1,7 @@
 # SimpNet-Tensorflow
 
 <p align="center">
-    <img src="http://uupload.ir/files/6nag_logo.png">
+    <img src="http://uupload.ir/files/1b38_image-2018-09-01.png">
 </p>
 
 ---
