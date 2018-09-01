@@ -1,4 +1,11 @@
 # SimpNet-Tensorflow
+
+<p align="center">
+    <img src="http://uupload.ir/files/6nag_logo.png">
+</p>
+
+---
+
 By [Ali Gholami](https://hexpheus.github.io),
 Bio-intelligence Center, [Sharif University of Technology](http://www.en.sharif.edu/).
 
