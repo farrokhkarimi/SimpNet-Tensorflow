@@ -281,9 +281,10 @@ class SimpNet(object):
                 # Run the training graph nodes
                 _, step_loss, step_summary = sess.run([self.opt, self.loss_val, self.summary_op])
 
+                step += 1
                 total_loss += step_loss
                 n_batches += 1
-                writer.add_summary(step_summary, global_step=self.gstep)
+                writer.add_summary(step_summary, global_step=step)
 
                 if step + 1 % self.skip_steps == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
@@ -316,7 +317,7 @@ class SimpNet(object):
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
 
                 total_truth += batch_accuracy
-                writer.add_summary(step_summary, global_step=self.gstep)
+                writer.add_summary(step_summary, global_step=step)
 
         except tf.errors.OutOfRangeError:
             pass
