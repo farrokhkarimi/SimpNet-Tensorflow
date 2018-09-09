@@ -53,7 +53,7 @@ def scale(inputs, scope_name):
 
 def saf_pool(inputs, k_size, stride, padding, scope_name):
 
-    with tf.variable_scope(scope_name, tf.True) as scope:
+    with tf.variable_scope(scope_name, reuse=True) as scope:
 
         # Perform a Maxpool
         pooled = maxpool(
