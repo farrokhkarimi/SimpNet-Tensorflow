@@ -224,7 +224,7 @@ class SimpNet(object):
         self.logits = tf.layers.dense(
             inputs=flattened,
             units=self.n_classes,
-            name='fully_connected'
+            name='fc_final'
         )
     
 

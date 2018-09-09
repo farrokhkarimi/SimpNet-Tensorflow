@@ -12,7 +12,7 @@ import tensorflow as tf
 
 def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
 
-    with tf.variable_scope(scope_name, reuse=True) as scope:
+    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
 
         in_channels = inputs.shape[-1]
     
@@ -34,14 +34,14 @@ def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
 
 def maxpool(inputs, k_size, stride, padding, scope_name):
 
-    with tf.variable_scope(scope_name, reuse=True) as scope:
+    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
         pool = tf.nn.max_pool(value=inputs, ksize=[1, k_size, k_size, 1], strides=[1, stride, stride, 1], padding=padding)
         
     return pool
 
 def scale(inputs, scope_name):
 
-    with tf.variable_scope(scope_name, reuse=True) as scope:
+    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
 
         in_dim = inputs.shape[-1]
         alpha = tf.get_variable(name='alpha', shape=(in_dim, ), trainable=True)
@@ -53,7 +53,7 @@ def scale(inputs, scope_name):
 
 def saf_pool(inputs, k_size, stride, padding, scope_name):
 
-    with tf.variable_scope(scope_name, reuse=True) as scope:
+    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
 
         # Perform a Maxpool
         pooled = maxpool(
