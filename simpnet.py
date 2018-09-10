@@ -14,6 +14,7 @@ from cnn_config import *
 import time
 import utils as utils
 import numpy as np
+import os
 
 class SimpNet(object):
 
