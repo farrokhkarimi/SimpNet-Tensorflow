@@ -114,10 +114,23 @@ def read_mnist(path, flatten=True, num_train=55000):
     mnist = tf.contrib.learn.datasets.load_dataset("mnist")
     train_data = mnist.train.images # Returns np.array
     train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
-    eval_data = mnist.test.images # Returns np.array
-    eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+    print("I am ", train_labels.shape[0])
+    new_train_labels = np.zeros((train_labels.shape[0], 10))
+    new_train_labels[np.arange(train_labels.shape[0]), train_labels] = 1
 
-    return (train_data, train_labels), (eval_data, eval_labels), (eval_data, eval_labels)
+    print(train_data.shape)
+    print(train_labels.shape)
+    print(new_train_labels.shape)
+    eval_data = mnist.test.images # Returns np.array
+    print(eval_data.shape)
+    eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+    print("I am ", eval_labels.shape[0])
+    new_eval_labels = np.zeros((eval_labels.shape[0], 10))
+    new_eval_labels[np.arange(eval_labels.shape[0]), eval_labels] = 1
+    print(eval_labels.shape)   
+    print(new_eval_labels.shape)   
+
+    return (train_data, new_train_labels), (train_data, new_train_labels), (eval_data, new_eval_labels)
 
 def get_mnist_dataset(batch_size):
     # Step 1: Read in data

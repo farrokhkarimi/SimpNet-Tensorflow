@@ -262,6 +262,10 @@ class SimpNet(object):
         
         with tf.name_scope('predict'):  
             preds = tf.nn.softmax(self.logits)
+            
+            print('predictions shape {0}'.format(preds.shape))
+            print('labels shape {0}'.format(self.label.shape))
+
             correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(self.label, 1))
 
             # Summation of all probabilities of all correct predictions
@@ -343,7 +347,7 @@ class SimpNet(object):
             saver = tf.train.Saver()
             
             # Restore the checkpoints (in case of any!)
-            saver.restore(sess, os.path.dirname('checkpoints/simpnet_train'))
+            # saver.restore(sess, os.path.dirname('checkpoints/simpnet_train/checkpoint'))
             
             step = self.gstep.eval()
 
