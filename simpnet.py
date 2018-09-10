@@ -13,6 +13,7 @@ from cnn_config import *
 # from data_util import *
 import time
 import utils as utils
+import numpy as np
 
 class SimpNet(object):
 
@@ -44,7 +45,7 @@ class SimpNet(object):
 
         self.n_test = 10000
 
-    
+
     def get_data(self):
         
         with tf.name_scope('data'):
@@ -286,8 +287,8 @@ class SimpNet(object):
                 n_batches += 1
                 writer.add_summary(step_summary, global_step=step)
 
-                if step + 1 % self.skip_steps == 0:
-                    print("loss at step {0}: {1}".format(step, step_loss))
+                # if step + 1 % self.skip_steps == 0:
+                print("loss at step {0}: {1}".format(step, step_loss))
 
         except tf.errors.OutOfRangeError:
             pass

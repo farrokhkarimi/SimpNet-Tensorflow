@@ -110,18 +110,19 @@ def read_mnist(path, flatten=True, num_train=55000):
     Return two tuples of numpy arrays
     ((train_imgs, train_labels), (test_imgs, test_labels))
     """
-    imgs, labels = parse_data(path, 'train', flatten)
-    indices = np.random.permutation(labels.shape[0])
-    train_idx, val_idx = indices[:num_train], indices[num_train:]
-    train_img, train_labels = imgs[train_idx, :], labels[train_idx, :]
-    val_img, val_labels = imgs[val_idx, :], labels[val_idx, :]
-    test = parse_data(path, 't10k', flatten)
-    return (train_img, train_labels), (val_img, val_labels), test
+    # Load training and eval data
+    mnist = tf.contrib.learn.datasets.load_dataset("mnist")
+    train_data = mnist.train.images # Returns np.array
+    train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
+    eval_data = mnist.test.images # Returns np.array
+    eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+
+    return (train_data, train_labels), (eval_data, eval_labels), (eval_data, eval_labels)
 
 def get_mnist_dataset(batch_size):
     # Step 1: Read in data
     mnist_folder = 'data/mnist'
-    download_mnist(mnist_folder)
+    # download_mnist(mnist_folder)
     train, val, test = read_mnist(mnist_folder, flatten=False)
 
     # Step 2: Create datasets and iterator
