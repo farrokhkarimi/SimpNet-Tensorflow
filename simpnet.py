@@ -257,7 +257,7 @@ class SimpNet(object):
             tf.summary.scalar('accuracy', self.accuracy)
             tf.summary.histogram('loss histogram', self.loss_val)
             self.summary_op = tf.summary.merge_all()
-            
+                
     def eval(self):
         
         with tf.name_scope('predict'):
@@ -312,6 +312,15 @@ class SimpNet(object):
         img = self.img
         logits = self.logits
 
+        max_prop = logits[0]
+
+        for i in logits.eval():
+            candidate = logits[i]
+
+            if candidate > max_prop:
+                max_prop = candidate
+        
+        print("Maximum is: {0}".format(max_prop))
         
     def evaluate_network(self, sess, init, writer, epoch, step):
 
