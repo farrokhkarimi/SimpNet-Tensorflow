@@ -25,11 +25,11 @@ def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
         norm = tf.layers.batch_normalization(inputs=conv, name='batch_norm')
 
         # Scale the normalized batch
-        # scaled_batch = scale(inputs=norm, scope_name='batch_norm_scaler')
+        scaled_batch = scale(inputs=norm, scope_name='scale')
 
     # Perform a relu and return
     # return tf.nn.relu(scaled_batch + biases, name=scope.name)
-    return tf.nn.relu(norm + biases, name='relu')
+    return tf.nn.relu(scaled_batch + biases, name='relu')
 
 
 def maxpool(inputs, k_size, stride, padding, scope_name):
@@ -47,7 +47,7 @@ def scale(inputs, scope_name):
         alpha = tf.get_variable(name='alpha', shape=(in_dim, ), trainable=True)
         beta = tf.get_variable(name='beta', shape=(in_dim, ), trainable=True)
 
-        scaled_input = alpha * input + beta
+        scaled_input = alpha * inputs + beta
 
     return scaled_input
 

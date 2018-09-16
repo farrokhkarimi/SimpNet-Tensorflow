@@ -260,7 +260,7 @@ class SimpNet(object):
             
     def eval(self):
         
-        with tf.name_scope('predict'):  
+        with tf.name_scope('predict'):
             preds = tf.nn.softmax(self.logits)
             
             print('predictions shape {0}'.format(preds.shape))
@@ -306,6 +306,13 @@ class SimpNet(object):
     
         return step
 
+
+    def draw_class_maps(self):
+
+        img = self.img
+        logits = self.logits
+
+        
     def evaluate_network(self, sess, init, writer, epoch, step):
 
         start_time = time.time()
