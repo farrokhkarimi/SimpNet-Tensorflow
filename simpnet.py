@@ -376,4 +376,4 @@ class SimpNet(object):
 if __name__ == '__main__':
     model = SimpNet()
     model.build_network_graph()
-    model.train(n_epochs=2)
+    model.train(n_epochs=20)
