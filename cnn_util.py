@@ -22,14 +22,14 @@ def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
         conv = tf.nn.conv2d(input=inputs, filter=kernel, strides=[1, stride, stride, 1], padding=padding, use_cudnn_on_gpu=True)
     
         # Perform a batch normalization
-        norm = tf.layers.batch_normalization(inputs=conv)
+        norm = tf.layers.batch_normalization(inputs=conv, name='batch_norm')
 
         # Scale the normalized batch
         # scaled_batch = scale(inputs=norm, scope_name='batch_norm_scaler')
 
     # Perform a relu and return
     # return tf.nn.relu(scaled_batch + biases, name=scope.name)
-    return tf.nn.relu(norm + biases, name=scope.name)
+    return tf.nn.relu(norm + biases, name='relu')
 
 
 def maxpool(inputs, k_size, stride, padding, scope_name):
