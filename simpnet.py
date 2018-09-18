@@ -27,10 +27,10 @@ class SimpNet(object):
         self.learning_rate = 0.001
 
         # Setup the data path (folder should contain train and test folders inside itself)
-        self.data_path = './data'
+        self.data_path = './images/eq_images'
 
         # Number of images in each batch
-        self.batch_size = 4
+        self.batch_size = 6
 
         # Number of classes
         self.n_classes = 12
@@ -42,7 +42,7 @@ class SimpNet(object):
         self.training = True
         
         # Which steps show the loss in each epoch
-        self.skip_steps = 10
+        self.skip_steps = 1
 
         self.n_test = 10000
 

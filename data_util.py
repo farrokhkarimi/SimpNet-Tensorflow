@@ -19,10 +19,19 @@ import cv2
 def parse_data(path, dataset, flatten):
     if dataset != 'train' and dataset != 'validation':
         raise NameError('dataset must be train or validation.')
-
+	
     # Load the data
-    DATA_ROOT = 'data/'
+    DATA_ROOT = 'images/'
     train_list = pd.read_csv(DATA_ROOT + 'Data_Entry_2017.csv')
+    train_targets = pd.read_csv('train_val_list.csv')
+    test_targets = pd.read_csv('test_list.csv')
+    print("train_list dims: ", train_list.shape)
+    print("train_targets dims: ", train_targets.shape)
+    print("test_targets dims: ", test_targets.shape)
+    
+    print("test targets type: ", type(test_targets))
+    train_list = train_list[np.logical_not(train_list['Image Index'].isin(test_targets))]
+    print("Done!!!!!")
 
     # Scan the directory of images
     train_images = {os.path.basename(x): x for x in 
@@ -33,10 +42,10 @@ def parse_data(path, dataset, flatten):
     # Convert the labels into the binary format
     n_classes = train_list['Finding Labels'].value_counts()[:15]
     # print("Number of classes {0}".format(n_classes))
-    fig, ax1 = plt.subplots(1,1,figsize = (12, 8))
-    ax1.bar(np.arange(len(n_classes))+0.5, n_classes)
-    ax1.set_xticks(np.arange(len(n_classes))+0.5)
-    _ = ax1.set_xticklabels(n_classes.index, rotation = 90)
+    # fig, ax1 = plt.subplots(1,1,figsize = (12, 8))
+    # ax1.bar(np.arange(len(n_classes))+0.5, n_classes)
+    # ax1.set_xticks(np.arange(len(n_classes))+0.5)
+    # _ = ax1.set_xticklabels(n_classes.index, rotation = 90)
     # plt.show()
 
     train_list['Finding Labels'] = train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
@@ -62,21 +71,25 @@ def parse_data(path, dataset, flatten):
 
     new_labels = train_list[all_labels]
 
-
+    
+    # Load the data specified in the train_val.csv
+    
     list_of_imgs = []
-    img_dir = "./data/images/"
-    for img in os.listdir(img_dir):
-        img = os.path.join(img_dir, img)
-        if not img.endswith(".png"):
-            continue
-        a = cv2.imread(img)
+    img_dir = "./images/images/"
+    
+    for idx, img in train_list.iterrows():
+        # print("found: ", img['Image Index'])
+        img = os.path.join(img_dir, img['Image Index'])
+        a = cv2.imread(img)	
+        a = cv2.resize(a,(224,224))
+        a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
         if a is None:
             print("Unable to read image", img)
             continue
         list_of_imgs.append(a.flatten())
     imgs = np.array(list_of_imgs)
-
-    print("Dimensionality of images: {0}".format(imgs.shape))
+    #print("Dimensionality of labels: {0}".format(train_list.shape))    
+    #print("Dimensionality of images: {0}".format(imgs.shape))
     return imgs, new_labels.as_matrix()
 
 
