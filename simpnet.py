@@ -30,10 +30,10 @@ class SimpNet(object):
         self.data_path = './data'
 
         # Number of images in each batch
-        self.batch_size = 128
+        self.batch_size = 4
 
         # Number of classes
-        self.n_classes = 10
+        self.n_classes = 12
 
         # Global step (times the graph seen the data)
         self.gstep = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
