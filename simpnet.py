@@ -50,8 +50,8 @@ class SimpNet(object):
     def get_data(self):
         
         with tf.name_scope('data'):
-            
-            train_data, test_data =  get_image_dataset(self.data_path, self.batch_size)
+
+            train_data, test_data =  self.get_image_dataset(self.data_path, self.batch_size)
             iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
 
             print('HELOOO')
@@ -62,6 +62,20 @@ class SimpNet(object):
 
             self.train_init = iterator.make_initializer(train_data)
             self.test_init = iterator.make_initializer(test_data)
+
+    def get_image_dataset(self, dir_path, batch_size, split=0.7):
+
+        train_data_gen, val_data_gen = get_nih_data(dir_path, split)
+
+        # Create the dataset for our train data
+        train_data = tf.data.Dataset.from_generator(train_data_gen)
+        train_data = train_data.batch(batch_size)
+
+        # Create the dataset for our test data
+        val_data = tf.data.Dataset.from_generator(val_data_gen)
+        val_data = val_data.batch(batch_size)
+
+        return train_data, val_data
 
     def build_network_graph(self):
 
