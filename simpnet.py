@@ -10,9 +10,9 @@
 import tensorflow as tf
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
-# from data_util import *
+from data_util import *
 import time
-import utils as utils
+# import utils as utils
 import numpy as np
 import os
 
@@ -51,7 +51,7 @@ class SimpNet(object):
         
         with tf.name_scope('data'):
             
-            train_data, test_data =  utils.get_mnist_dataset(self.batch_size)
+            train_data, test_data =  get_image_dataset(self.data_path, self.batch_size)
             iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
 
             print('HELOOO')
