@@ -12,7 +12,7 @@ from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from data_util import *
 import time
-# import utils as utils
+import utils as utils
 import numpy as np
 import os
 
