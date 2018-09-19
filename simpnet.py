@@ -11,7 +11,6 @@ import tensorflow as tf
 import pandas as pd
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
-from data_util import *
 import time
 from itertools import chain
 import cv2
@@ -30,16 +29,16 @@ class SimpNet(object):
         self.learning_rate = 0.001
 
         # Setup the data path (folder should contain train and test folders inside itself)
-        self.data_path = './images/eq_images'
-        self.main_csv = '.Data_Entry_2017.csv'
-        self.train_val_csv = '.train_val_list.csv'
-        self.test_csv = '.test_list.csv'
+        self.data_path = './images/images'
+        self.main_csv = 'Data_Entry_2017.csv'
+        self.train_val_csv = 'train_val_list.csv'
+        self.test_csv = 'test_list.csv'
 
         # Number of images in each batch
         self.batch_size = 6
 
         # Number of classes
-        self.n_classes = 12
+        self.n_classes = 14
 
         # Global step (times the graph seen the data)
         self.gstep = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
@@ -59,7 +58,7 @@ class SimpNet(object):
 
             # Load csv data into memory for faster iterations
             # Clean train list
-            self.train_list = pd.read_csv(DATA_ROOT + self.main_csv)
+            self.train_list = pd.read_csv(self.main_csv)
             self.train_targets = pd.read_csv(self.train_val_csv)
             self.test_targets = pd.read_csv(self.test_csv)
             self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.test_targets))]
@@ -72,16 +71,17 @@ class SimpNet(object):
             for c_label in self.all_labels:
                 if len(c_label)>1: # leave out empty labels
                     self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-
+            print("Loaded csvs")
             data_generator = lambda: self.NIH_GENERATOR(images_path=self.data_path)
-
+            
+            print("blah1")
             my_data = tf.data.Dataset.from_generator(
             generator=data_generator,
             output_types=(tf.float32, tf.float32),
             output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
             ).batch(self.batch_size)
-
-            img, self.label = my_data.make_one_shot_iterator.get_next()
+            print("blah2")
+            img, self.label = my_data.make_one_shot_iterator().get_next()
 
             # train_data, test_data =  self.get_image_dataset(self.data_path, self.batch_size)
             # iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
@@ -92,8 +92,8 @@ class SimpNet(object):
             self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
             print("shape after: ", img.shape)
 
-            self.train_init = iterator.make_initializer(train_data)
-            self.test_init = iterator.make_initializer(test_data)
+            # self.train_init = tf.data.Iterator.make_initializer(train_data)
+            # self.test_init = tf.data.Iterator.make_initializer(test_data)
 
     def NIH_GENERATOR(self, images_path):
         for idx, img in self.train_list.iterrows():
@@ -102,26 +102,13 @@ class SimpNet(object):
             if a is None:
                 print("Unable to read image", img)
                 continue
-
+            
+            print("Loaded image: ", idx)
             # Perprocess the loaded image
             a = cv2.resize(a, (224, 224))
             a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
 
-            yield (np.array(a.flatten()), train_list.loc[idx, self.all_labels].as_matrix())
-
-    def get_image_dataset(self, dir_path, batch_size, split=0.7):
-
-        train_data_gen, val_data_gen = get_nih_data(dir_path, split)
-
-        # Create the dataset for our train data
-        train_data = tf.data.Dataset.from_generator(train_data_gen)
-        train_data = train_data.batch(batch_size)
-
-        # Create the dataset for our test data
-        val_data = tf.data.Dataset.from_generator(val_data_gen)
-        val_data = val_data.batch(batch_size)
-
-        return train_data, val_data
+            yield (np.array(a.flatten()), self.train_list.loc[idx, self.all_labels].as_matrix())
 
     def build_network_graph(self):
 
@@ -335,7 +322,7 @@ class SimpNet(object):
         start_time = time.time()
 
         # Initialize training (ready data)
-        sess.run(init)
+        # sess.run(init)
         self.training = True
 
         n_batches = 0
@@ -387,7 +374,7 @@ class SimpNet(object):
         start_time = time.time()
 
         # Initialize the testing (ready test data)
-        sess.run(init)
+        # sess.run(init)
         self.traininig = False
 
         total_truth = 0
@@ -431,7 +418,7 @@ class SimpNet(object):
                 # Train the model for one epoch
                 step = self.train_network_one_epoch(
                     sess=sess,
-                    init=self.train_init,
+                    init=None,
                     saver=saver,
                     writer=writer,
                     epoch=epoch,
@@ -441,7 +428,7 @@ class SimpNet(object):
                 # Evaluate the model after each epoch
                 self.evaluate_network(
                     sess=sess,
-                    init=self.test_init,
+                    init=None,
                     writer=writer,
                     epoch=epoch,
                     step=step
