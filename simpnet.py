@@ -35,7 +35,7 @@ class SimpNet(object):
         self.test_csv = 'test_list.csv'
 
         # Number of images in each batch
-        self.batch_size = 6
+        self.batch_size = 10
 
         # Number of classes
         self.n_classes = 14
@@ -56,24 +56,8 @@ class SimpNet(object):
 
         with tf.name_scope('data'):
 
-            # Load csv data into memory for faster iterations
-            # Clean train list
-            self.train_list = pd.read_csv(self.main_csv)
-            self.train_targets = pd.read_csv(self.train_val_csv)
-            self.test_targets = pd.read_csv(self.test_csv)
-            self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.test_targets))]
-
-            # Convert to one hot
-            self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
-            self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
-            self.all_labels = [x for x in self.all_labels if len(x)>0]
-            # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
-            for c_label in self.all_labels:
-                if len(c_label)>1: # leave out empty labels
-                    self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-            print("Loaded csvs")
             data_generator = lambda: self.NIH_GENERATOR(images_path=self.data_path)
-            
+
             print("blah1")
             my_data = tf.data.Dataset.from_generator(
             generator=data_generator,
@@ -95,14 +79,51 @@ class SimpNet(object):
             # self.train_init = tf.data.Iterator.make_initializer(train_data)
             # self.test_init = tf.data.Iterator.make_initializer(test_data)
 
-    def NIH_GENERATOR(self, images_path):
+    def initialize_training_data(self):
+        # Load csv data into memory for faster iterations
+        # Clean train list
+        self.train_list = pd.read_csv(self.main_csv)
+        self.train_targets = pd.read_csv(self.train_val_csv)
+        self.test_targets = pd.read_csv(self.test_csv)
+        self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.test_targets))]
+
+        # Convert to one hot
+        self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+        self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+        self.all_labels = [x for x in self.all_labels if len(x)>0]
+        # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+        for c_label in self.all_labels:
+            if len(c_label)>1: # leave out empty labels
+                self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+        print("Loaded csvs")
+
+    def initialize_test_data(self):
+        # Load csv data into memory for faster iterations
+        # Clean train list
+        self.train_list = pd.read_csv(self.main_csv)
+        self.train_targets = pd.read_csv(self.train_val_csv)
+        self.test_targets = pd.read_csv(self.test_csv)
+        self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.train_targets)))]
+
+        # Convert to one hot
+        self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+        self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+        self.all_labels = [x for x in self.all_labels if len(x)>0]
+        # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+        for c_label in self.all_labels:
+            if len(c_label)>1: # leave out empty labels
+                self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+        print("Loaded csvs")
+
+
+    def NIH__GENERATOR(self, images_path):
         for idx, img in self.train_list.iterrows():
             img = os.path.join(images_path, img['Image Index'])
             a = cv2.imread(img)
             if a is None:
                 print("Unable to read image", img)
                 continue
-            
+
             print("Loaded image: ", idx)
             # Perprocess the loaded image
             a = cv2.resize(a, (224, 224))
@@ -323,6 +344,10 @@ class SimpNet(object):
 
         # Initialize training (ready data)
         # sess.run(init)
+
+        # Ready training data
+
+        self.initialize_training_data()
         self.training = True
 
         n_batches = 0
@@ -339,8 +364,8 @@ class SimpNet(object):
                 n_batches += 1
                 writer.add_summary(step_summary, global_step=step)
 
-                # if step + 1 % self.skip_steps == 0:
-                print("loss at step {0}: {1}".format(step, step_loss))
+                if (step + 1 % self.skip_steps) == 0:
+                    print("loss at step {0}: {1}".format(step, step_loss))
 
         except tf.errors.OutOfRangeError:
             pass
@@ -375,6 +400,8 @@ class SimpNet(object):
 
         # Initialize the testing (ready test data)
         # sess.run(init)
+
+        self.initialize_test_data()
         self.traininig = False
 
         total_truth = 0
