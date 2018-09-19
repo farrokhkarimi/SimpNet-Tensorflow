@@ -19,7 +19,7 @@ import cv2
 def parse_data(path, dataset, flatten):
     if dataset != 'train' and dataset != 'validation':
         raise NameError('dataset must be train or validation.')
-	
+
     # Load the data
     DATA_ROOT = 'images/'
     train_list = pd.read_csv(DATA_ROOT + 'Data_Entry_2017.csv')
@@ -28,13 +28,13 @@ def parse_data(path, dataset, flatten):
     print("train_list dims: ", train_list.shape)
     print("train_targets dims: ", train_targets.shape)
     print("test_targets dims: ", test_targets.shape)
-    
+
     print("test targets type: ", type(test_targets))
     train_list = train_list[np.logical_not(train_list['Image Index'].isin(test_targets))]
     print("Done!!!!!")
 
     # Scan the directory of images
-    train_images = {os.path.basename(x): x for x in 
+    train_images = {os.path.basename(x): x for x in
                     glob(os.path.join(DATA_ROOT, 'images*', '*.png'))}
 
     print('Scans found:', len(train_images), ', Total Headers', train_list.shape[0])
@@ -66,21 +66,21 @@ def parse_data(path, dataset, flatten):
     # train_list = train_list.sample(500, weights=sample_weights)
     # label_counts = train_list['Finding Labels'].value_counts()[:15]
     # label_counts = 100*np.mean(train_list[all_labels].values,0)
-    
+
     # train_list['disease_vec'] = train_list.apply(lambda x: [x[all_labels].values], 1).map(lambda x: x[0])
 
     new_labels = train_list[all_labels]
 
-    
+
     # Load the data specified in the train_val.csv
-    
+
     list_of_imgs = []
     img_dir = "./images/images/"
-    
+
     for idx, img in train_list.iterrows():
         # print("found: ", img['Image Index'])
         img = os.path.join(img_dir, img['Image Index'])
-        a = cv2.imread(img)	
+        a = cv2.imread(img)
         a = cv2.resize(a,(224,224))
         a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
         if a is None:
@@ -88,7 +88,7 @@ def parse_data(path, dataset, flatten):
             continue
         list_of_imgs.append(a.flatten())
     imgs = np.array(list_of_imgs)
-    #print("Dimensionality of labels: {0}".format(train_list.shape))    
+    #print("Dimensionality of labels: {0}".format(train_list.shape))
     #print("Dimensionality of images: {0}".format(imgs.shape))
     return imgs, new_labels.as_matrix()
 

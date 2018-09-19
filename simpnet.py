@@ -8,10 +8,13 @@
 # ========================================
 
 import tensorflow as tf
+import pandas as pd
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from data_util import *
 import time
+from itertools import chain
+import cv2
 import utils as utils
 import numpy as np
 import os
@@ -28,6 +31,9 @@ class SimpNet(object):
 
         # Setup the data path (folder should contain train and test folders inside itself)
         self.data_path = './images/eq_images'
+        self.main_csv = '.Data_Entry_2017.csv'
+        self.train_val_csv = '.train_val_list.csv'
+        self.test_csv = '.test_list.csv'
 
         # Number of images in each batch
         self.batch_size = 6
@@ -40,7 +46,7 @@ class SimpNet(object):
 
         # Shows the overall graph status (Trainig vs Testing)
         self.training = True
-        
+
         # Which steps show the loss in each epoch
         self.skip_steps = 1
 
@@ -48,20 +54,60 @@ class SimpNet(object):
 
 
     def get_data(self):
-        
+
         with tf.name_scope('data'):
 
-            train_data, test_data =  self.get_image_dataset(self.data_path, self.batch_size)
-            iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
+            # Load csv data into memory for faster iterations
+            # Clean train list
+            self.train_list = pd.read_csv(DATA_ROOT + self.main_csv)
+            self.train_targets = pd.read_csv(self.train_val_csv)
+            self.test_targets = pd.read_csv(self.test_csv)
+            self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.test_targets))]
+
+            # Convert to one hot
+            self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+            self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+            self.all_labels = [x for x in self.all_labels if len(x)>0]
+            # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+            for c_label in self.all_labels:
+                if len(c_label)>1: # leave out empty labels
+                    self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+
+            data_generator = lambda: self.NIH_GENERATOR(images_path=self.data_path)
+
+            my_data = tf.data.Dataset.from_generator(
+            generator=data_generator,
+            output_types=(tf.float32, tf.float32),
+            output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
+            ).batch(self.batch_size)
+
+            img, self.label = my_data.make_one_shot_iterator.get_next()
+
+            # train_data, test_data =  self.get_image_dataset(self.data_path, self.batch_size)
+            # iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
 
             print('HELOOO')
-            img, self.label = iterator.get_next()
+            # img, self.label = iterator.get_next()
             print("shape before: ", img.shape)
             self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
             print("shape after: ", img.shape)
 
             self.train_init = iterator.make_initializer(train_data)
             self.test_init = iterator.make_initializer(test_data)
+
+    def NIH_GENERATOR(self, images_path):
+        for idx, img in self.train_list.iterrows():
+            img = os.path.join(images_path, img['Image Index'])
+            a = cv2.imread(img)
+            if a is None:
+                print("Unable to read image", img)
+                continue
+
+            # Perprocess the loaded image
+            a = cv2.resize(a, (224, 224))
+            a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
+
+            yield (np.array(a.flatten()), train_list.loc[idx, self.all_labels].as_matrix())
 
     def get_image_dataset(self, dir_path, batch_size, split=0.7):
 
@@ -85,9 +131,9 @@ class SimpNet(object):
         self.optimize()
         self.eval()
         self.summary()
-    
+
     def inference(self):
-        
+
         print("INPUT SHAPE: ", self.img.shape)
 
         conv1 = conv_bn_sc_relu(
@@ -118,7 +164,7 @@ class SimpNet(object):
         )
 
         conv4 = conv_bn_sc_relu(
-            inputs=conv3, 
+            inputs=conv3,
             filters=CONV4_NUM_FILTERS,
             k_size=CONV4_FILTER_SIZE,
             stride=1,
@@ -144,7 +190,7 @@ class SimpNet(object):
         )
 
         conv6 = conv_bn_sc_relu(
-            inputs=pool1, 
+            inputs=pool1,
             filters=CONV6_NUM_FILTERS,
             k_size=CONV6_FILTER_SIZE,
             stride=1,
@@ -215,7 +261,7 @@ class SimpNet(object):
         )
 
         conv13 = conv_bn_sc_relu(
-            inputs=conv12, 
+            inputs=conv12,
             filters=CONV13_NUM_FILTERS,
             k_size=CONV13_FILTER_SIZE,
             stride=1,
@@ -242,19 +288,19 @@ class SimpNet(object):
             units=self.n_classes,
             name='fc_final'
         )
-    
+
 
     def loss(self):
 
         with tf.name_scope('loss'):
             entropy = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits)
-            
+
             # Loss is mean of error on all dimensions
             self.loss_val = tf.reduce_mean(entropy, name='loss')
 
 
     def optimize(self):
-        
+
         with tf.name_scope('optimizer'):
             self.opt = tf.train.AdamOptimizer(
                 learning_rate=self.learning_rate,
@@ -271,12 +317,12 @@ class SimpNet(object):
             tf.summary.scalar('accuracy', self.accuracy)
             tf.summary.histogram('loss histogram', self.loss_val)
             self.summary_op = tf.summary.merge_all()
-                
+
     def eval(self):
-        
+
         with tf.name_scope('predict'):
             preds = tf.nn.softmax(self.logits)
-            
+
             print('predictions shape {0}'.format(preds.shape))
             print('labels shape {0}'.format(self.label.shape))
 
@@ -284,10 +330,10 @@ class SimpNet(object):
 
             # Summation of all probabilities of all correct predictions
             self.accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
-    
+
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
-        
+
         # Initialize training (ready data)
         sess.run(init)
         self.training = True
@@ -317,7 +363,7 @@ class SimpNet(object):
 
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
         print("Took {0} seconds...".format(time.time() - start_time))
-    
+
         return step
 
 
@@ -333,9 +379,9 @@ class SimpNet(object):
 
             if candidate > max_prop:
                 max_prop = candidate
-        
+
         print("Maximum is: {0}".format(max_prop))
-        
+
     def evaluate_network(self, sess, init, writer, epoch, step):
 
         start_time = time.time()
@@ -344,12 +390,12 @@ class SimpNet(object):
         sess.run(init)
         self.traininig = False
 
-        total_truth = 0 
+        total_truth = 0
 
         try:
             while True:
 
-                # Test the network 
+                # Test the network
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
 
                 total_truth += batch_accuracy
@@ -363,22 +409,22 @@ class SimpNet(object):
 
 
     def train(self, n_epochs):
-    
+
         utils.safe_mkdir('checkpoints')
         utils.safe_mkdir('checkpoints/simpnet_train')
         writer = tf.summary.FileWriter('./graphs/simpnet', graph=tf.get_default_graph())
 
         with tf.Session() as sess:
-            
+
             # Initialize the variables
             sess.run(tf.global_variables_initializer())
 
             # Check if there exists a training checkpoint
             saver = tf.train.Saver()
-            
+
             # Restore the checkpoints (in case of any!)
             # saver.restore(sess, os.path.dirname('checkpoints/simpnet_train/checkpoint'))
-            
+
             step = self.gstep.eval()
 
             for epoch in range(n_epochs):
@@ -391,16 +437,16 @@ class SimpNet(object):
                     epoch=epoch,
                     step=step
                 )
-        
+
                 # Evaluate the model after each epoch
                 self.evaluate_network(
-                    sess=sess, 
+                    sess=sess,
                     init=self.test_init,
                     writer=writer,
                     epoch=epoch,
                     step=step
                 )
-        
+
         writer.close()
 
 if __name__ == '__main__':
