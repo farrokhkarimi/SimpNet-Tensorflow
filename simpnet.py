@@ -47,7 +47,7 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 10
+        self.skip_steps = 50
 
         self.n_test = 25596
 
@@ -364,6 +364,7 @@ class SimpNet(object):
                 n_batches += 1
                 writer.add_summary(step_summary, global_step=step)
 
+                # Stepwise loss
                 if ((step + 1) % self.skip_steps) == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
 
@@ -383,6 +384,7 @@ class SimpNet(object):
         # Save learned weights
         saver.save(sess, 'checkpoints/simpnet_train', step)
 
+        # Overall loss
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
         print("Took {0} seconds...".format(time.time() - start_time))
 
@@ -424,6 +426,8 @@ class SimpNet(object):
 
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=step)
+
+                print("Batch accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
 
         except tf.errors.OutOfRangeError:
             pass
