@@ -439,8 +439,12 @@ class SimpNet(object):
             saver = tf.train.Saver()
 
             # Restore the checkpoints (in case of any!)
-            saver.restore(sess, os.path.dirname('checkpoints/simpnet_train/checkpoint'))
-
+            ckpt = tf.train.get_checkpoint_state('checkpoints/simpnet_train/checkpoint')
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+            else:
+                print("[NO CHECKPOINTS FOUND!]")
+                
             step = self.gstep.eval()
 
             for epoch in range(n_epochs):
