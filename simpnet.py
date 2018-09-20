@@ -47,7 +47,7 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 50
+        self.skip_steps = 20
 
         self.n_test = 25596
 
@@ -95,7 +95,7 @@ class SimpNet(object):
         for c_label in self.all_labels:
             if len(c_label)>1: # leave out empty labels
                 self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-        print("Loaded csvs")
+        print("[TRAINING...]")
 
     def initialize_test_data(self):
         # Load csv data into memory for faster iterations
@@ -113,7 +113,7 @@ class SimpNet(object):
         for c_label in self.all_labels:
             if len(c_label)>1: # leave out empty labels
                 self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-        print("Loaded csvs")
+        print("[VALIDATION...]")
 
 
     def NIH_GENERATOR(self, images_path):
@@ -368,16 +368,6 @@ class SimpNet(object):
                 if ((step + 1) % self.skip_steps) == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
 
-                # Testing the evaluation section
-                if ((step + 1) > 50):
-                    self.evaluate_network(
-                        sess=sess,
-                        init=None,
-                        writer=writer,
-                        epoch=epoch,
-                        step=step
-                    )
-
         except tf.errors.OutOfRangeError:
             pass
 
@@ -427,8 +417,6 @@ class SimpNet(object):
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=step)
 
-                print("Batch accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
-
         except tf.errors.OutOfRangeError:
             pass
 
@@ -451,7 +439,7 @@ class SimpNet(object):
             saver = tf.train.Saver()
 
             # Restore the checkpoints (in case of any!)
-            # saver.restore(sess, os.path.dirname('checkpoints/simpnet_train/checkpoint'))
+            saver.restore(sess, os.path.dirname('checkpoints/simpnet_train/checkpoint'))
 
             step = self.gstep.eval()
 
