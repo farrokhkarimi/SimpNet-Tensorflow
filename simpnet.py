@@ -367,12 +367,11 @@ class SimpNet(object):
                 # Stepwise loss
                 if ((step + 1) % self.skip_steps) == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
+                    # Save learned weights
+                    saver.save(sess, 'checkpoints/simpnet_train', step)
 
         except tf.errors.OutOfRangeError:
             pass
-
-        # Save learned weights
-        saver.save(sess, 'checkpoints/simpnet_train', step)
 
         # Overall loss
         print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
@@ -442,9 +441,10 @@ class SimpNet(object):
             ckpt = tf.train.get_checkpoint_state('checkpoints/simpnet_train/checkpoint')
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
+                print("[RELOADED THE MODEL!]")
             else:
                 print("[NO CHECKPOINTS FOUND!]")
-                
+
             step = self.gstep.eval()
 
             for epoch in range(n_epochs):
