@@ -26,7 +26,7 @@ class SimpNet(object):
         self.keep_prob = 0.7
 
         # Learning rate
-        self.learning_rate = 0.001
+        self.learning_rate = 0.0001
 
         # Setup the data path (folder should contain train and test folders inside itself)
         self.data_path = './images/images'
@@ -47,9 +47,9 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 1
+        self.skip_steps = 10
 
-        self.n_test = 10000
+        self.n_test = 25596
 
 
     def get_data(self):
@@ -63,7 +63,7 @@ class SimpNet(object):
             generator=data_generator,
             output_types=(tf.float32, tf.float32),
             output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
-            ).batch(self.batch_size)
+            ).batch(self.batch_size).prefetch(2)
             print("blah2")
             img, self.label = my_data.make_one_shot_iterator().get_next()
 
@@ -103,7 +103,7 @@ class SimpNet(object):
         self.train_list = pd.read_csv(self.main_csv)
         self.train_targets = pd.read_csv(self.train_val_csv)
         self.test_targets = pd.read_csv(self.test_csv)
-        self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.train_targets)))]
+        self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.train_targets))]
 
         # Convert to one hot
         self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
@@ -116,7 +116,7 @@ class SimpNet(object):
         print("Loaded csvs")
 
 
-    def NIH__GENERATOR(self, images_path):
+    def NIH_GENERATOR(self, images_path):
         for idx, img in self.train_list.iterrows():
             img = os.path.join(images_path, img['Image Index'])
             a = cv2.imread(img)
@@ -124,7 +124,7 @@ class SimpNet(object):
                 print("Unable to read image", img)
                 continue
 
-            print("Loaded image: ", idx)
+            # print("Loaded image: ", idx)
             # Perprocess the loaded image
             a = cv2.resize(a, (224, 224))
             a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
@@ -364,8 +364,18 @@ class SimpNet(object):
                 n_batches += 1
                 writer.add_summary(step_summary, global_step=step)
 
-                if (step + 1 % self.skip_steps) == 0:
+                if ((step + 1) % self.skip_steps) == 0:
                     print("loss at step {0}: {1}".format(step, step_loss))
+
+                # Testing the evaluation section
+                if ((step + 1) > 50):
+                    self.evaluate_network(
+                        sess=sess,
+                        init=None,
+                        writer=writer,
+                        epoch=epoch,
+                        step=step
+                    )
 
         except tf.errors.OutOfRangeError:
             pass
