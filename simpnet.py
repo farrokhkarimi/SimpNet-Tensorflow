@@ -47,7 +47,7 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 20
+        self.skip_steps = 200
 
         self.n_test = 25596
 
@@ -85,8 +85,8 @@ class SimpNet(object):
         self.train_list = pd.read_csv(self.main_csv)
         self.train_targets = pd.read_csv(self.train_val_csv)
         self.test_targets = pd.read_csv(self.test_csv)
-        self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.test_targets))]
-
+        print("Not Update train list to the following shape: ", self.train_list.shape)
+        self.train_list = self.train_list[~self.train_list.index.isin(self.test_targets.index)]
         # Convert to one hot
         self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
         self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
@@ -95,6 +95,8 @@ class SimpNet(object):
         for c_label in self.all_labels:
             if len(c_label)>1: # leave out empty labels
                 self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+
+        print("Update train list to the following shape: ", self.train_list.shape)
         print("[TRAINING...]")
 
     def initialize_test_data(self):
@@ -103,8 +105,7 @@ class SimpNet(object):
         self.train_list = pd.read_csv(self.main_csv)
         self.train_targets = pd.read_csv(self.train_val_csv)
         self.test_targets = pd.read_csv(self.test_csv)
-        self.train_list = self.train_list[np.logical_not(self.train_list['Image Index'].isin(self.train_targets))]
-
+        self.train_list = self.train_list[~self.train_list.index.isin(self.train_targets.index)]
         # Convert to one hot
         self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
         self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
@@ -113,6 +114,8 @@ class SimpNet(object):
         for c_label in self.all_labels:
             if len(c_label)>1: # leave out empty labels
                 self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+
+        print("Update train list to the following shape: ", self.train_list.shape)
         print("[VALIDATION...]")
 
 
@@ -123,6 +126,8 @@ class SimpNet(object):
             if a is None:
                 print("Unable to read image", img)
                 continue
+            if ((idx + 1) % self.skip_steps == 0):
+                print("Loading occurs on ", idx)
 
             # print("Loaded image: ", idx)
             # Perprocess the loaded image
@@ -374,7 +379,7 @@ class SimpNet(object):
             pass
 
         # Overall loss
-        print("Average loss at epoch {0}: {1}".format(epoch, total_loss/n_batches))
+        print("Average loss at epoch {0}: {1}".format(epoch, total_loss/11212))
         print("Took {0} seconds...".format(time.time() - start_time))
 
         return step
@@ -438,7 +443,7 @@ class SimpNet(object):
             saver = tf.train.Saver()
 
             # Restore the checkpoints (in case of any!)
-            ckpt = tf.train.get_checkpoint_state('checkpoints/simpnet_train/checkpoint')
+            ckpt = tf.train.get_checkpoint_state('./checkpoints/')
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 print("[RELOADED THE MODEL!]")
@@ -450,12 +455,13 @@ class SimpNet(object):
             for epoch in range(n_epochs):
                 # Train the model for one epoch
                 step = self.train_network_one_epoch(
-                    sess=sess,
-                    init=None,
-                    saver=saver,
-                    writer=writer,
-                    epoch=epoch,
-                    step=step
+                   sess=sess,
+                   init=None,
+                   saver=saver,
+
+                   writer=writer,
+                   epoch=epoch,
+                   step=step
                 )
 
                 # Evaluate the model after each epoch
