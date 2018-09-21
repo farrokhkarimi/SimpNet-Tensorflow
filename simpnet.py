@@ -104,6 +104,7 @@ class SimpNet(object):
         
         with open(self.temp_csv, 'r') as f:
             for image in f.readlines():
+                image = image.strip()
                 img = os.path.join(images_path, image)
                 a = cv2.imread(img)
                 if a is None:
@@ -115,7 +116,7 @@ class SimpNet(object):
                 a = cv2.resize(a, (224, 224))
                 a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
                 
-                yield (np.array(a.flatten()), self.train_list.loc[pd.Index.get_loc(image), self.all_labels].as_matrix())
+                yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
 
     def build_network_graph(self):
 
