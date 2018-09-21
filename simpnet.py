@@ -52,55 +52,43 @@ class SimpNet(object):
 
         self.n_test = 25596
 
+        self.train_list = pd.read_csv(self.main_csv)
+
+        # Convert to one hot
+        self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+        self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+        self.all_labels = [x for x in self.all_labels if len(x)>0]
+        # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+        for c_label in self.all_labels:
+            if len(c_label)>1: # leave out empty labels
+                self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
+
 
     def get_data(self):
 
         with tf.name_scope('data'):
 
-            self.train_list = pd.read_csv(self.main_csv)
+            data_generator = lambda: self.nih_data_generator(images_path=self.data_path)
 
-            # Convert to one hot
-            self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
-            self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
-            self.all_labels = [x for x in self.all_labels if len(x)>0]
-            # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
-            for c_label in self.all_labels:
-                if len(c_label)>1: # leave out empty labels
-                    self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-
-            data_generator = lambda: self.NIH_GENERATOR(images_path=self.data_path)
-
-            print("blah1")
             my_data = tf.data.Dataset.from_generator(
             generator=data_generator,
             output_types=(tf.float32, tf.float32),
             output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
             ).batch(self.batch_size).prefetch(2)
-            print("blah2")
+
             img, self.label = my_data.make_one_shot_iterator().get_next()
 
-            # train_data, test_data =  self.get_image_dataset(self.data_path, self.batch_size)
-            # iterator = tf.data.Iterator.from_structure(output_types=train_data.output_types, output_shapes=train_data.output_shapes)
-
-            print('HELOOO')
-            # img, self.label = iterator.get_next()
-            print("shape before: ", img.shape)
             self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
-            print("shape after: ", img.shape)
-
-            # self.train_init = tf.data.Iterator.make_initializer(train_data)
-            # self.test_init = tf.data.Iterator.make_initializer(test_data)
 
     def initialize_training_data(self):
+        print("[INFO]: Initialized Training...")
         self.temp_csv = pd.read_csv(self.train_val_csv)
-        print("[TRAINING...]")
 
     def initialize_test_data(self):
+        print("[INFO]: Initialized Validation...")
         self.temp_csv = pd.read_csv(self.test_csv)
-        print("[VALIDATION...]")
 
-
-    def NIH_GENERATOR(self, images_path):
+    def nih_data_generator(self, images_path):
         
         with open(self.temp_csv, 'r') as f:
             for image in f.readlines():
@@ -110,12 +98,10 @@ class SimpNet(object):
                 if a is None:
                     print("Unable to read image", img)
                     continue
-                print("Loaded image: ", img)
 
-                # A bit of preprocessing :D
                 a = cv2.resize(a, (224, 224))
                 a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-                
+
                 yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
 
     def build_network_graph(self):
@@ -128,8 +114,6 @@ class SimpNet(object):
         self.summary()
 
     def inference(self):
-
-        print("INPUT SHAPE: ", self.img.shape)
 
         conv1 = conv_bn_sc_relu(
             inputs=self.img,
@@ -328,12 +312,6 @@ class SimpNet(object):
 
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
-
-        # Initialize training (ready data)
-        # sess.run(init)
-
-        # Ready training data
-
         self.initialize_training_data()
         self.training = True
 
@@ -356,6 +334,7 @@ class SimpNet(object):
                     print("loss at step {0}: {1}".format(step, step_loss))
                     # Save learned weights
                     saver.save(sess, 'checkpoints/simpnet_train', step)
+                    break
 
         except tf.errors.OutOfRangeError:
             pass
@@ -383,12 +362,7 @@ class SimpNet(object):
         print("Maximum is: {0}".format(max_prop))
 
     def evaluate_network(self, sess, init, writer, epoch, step):
-
         start_time = time.time()
-
-        # Initialize the testing (ready test data)
-        # sess.run(init)
-
         self.initialize_test_data()
         self.traininig = False
 
@@ -428,23 +402,22 @@ class SimpNet(object):
             ckpt = tf.train.get_checkpoint_state('./checkpoints/')
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
-                print("[RELOADED THE MODEL!]")
+                print("[INFO]: Reloaded From Checkpoints...")
             else:
-                print("[NO CHECKPOINTS FOUND!]")
+                print("[INFO]: No Checkpoint Found...")
 
             step = self.gstep.eval()
 
             for epoch in range(n_epochs):
-                # Train the model for one epoch
-                # step = self.train_network_one_epoch(
-                #   sess=sess,
-                #   init=None,
-                #   saver=saver,
-
-                #   writer=writer,
-                #   epoch=epoch,
-                #   step=step
-                # )
+                 # Train the model for one epoch
+                step = self.train_network_one_epoch(
+                   sess=sess,
+                   init=None,
+                   saver=saver,
+                   writer=writer,
+                   epoch=epoch,
+                   step=step
+                )
 
                 # Evaluate the model after each epoch
                 self.evaluate_network(
