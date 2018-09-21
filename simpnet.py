@@ -33,6 +33,7 @@ class SimpNet(object):
         self.main_csv = 'Data_Entry_2017.csv'
         self.train_val_csv = 'train_val_list.csv'
         self.test_csv = 'test_list.csv'
+        self.temp_csv = None
 
         # Number of images in each batch
         self.batch_size = 10
@@ -55,6 +56,17 @@ class SimpNet(object):
     def get_data(self):
 
         with tf.name_scope('data'):
+
+            self.train_list = pd.read_csv(self.main_csv)
+
+            # Convert to one hot
+            self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
+            self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
+            self.all_labels = [x for x in self.all_labels if len(x)>0]
+            # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
+            for c_label in self.all_labels:
+                if len(c_label)>1: # leave out empty labels
+                    self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
 
             data_generator = lambda: self.NIH_GENERATOR(images_path=self.data_path)
 
@@ -80,61 +92,30 @@ class SimpNet(object):
             # self.test_init = tf.data.Iterator.make_initializer(test_data)
 
     def initialize_training_data(self):
-        # Load csv data into memory for faster iterations
-        # Clean train list
-        self.train_list = pd.read_csv(self.main_csv)
-        self.train_targets = pd.read_csv(self.train_val_csv)
-        self.test_targets = pd.read_csv(self.test_csv)
-        print("Not Update train list to the following shape: ", self.train_list.shape)
-        self.train_list = self.train_list[~self.train_list.index.isin(self.test_targets.index)]
-        # Convert to one hot
-        self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
-        self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
-        self.all_labels = [x for x in self.all_labels if len(x)>0]
-        # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
-        for c_label in self.all_labels:
-            if len(c_label)>1: # leave out empty labels
-                self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-
-        print("Update train list to the following shape: ", self.train_list.shape)
+        self.temp_csv = pd.read_csv(self.train_val_csv)
         print("[TRAINING...]")
 
     def initialize_test_data(self):
-        # Load csv data into memory for faster iterations
-        # Clean train list
-        self.train_list = pd.read_csv(self.main_csv)
-        self.train_targets = pd.read_csv(self.train_val_csv)
-        self.test_targets = pd.read_csv(self.test_csv)
-        self.train_list = self.train_list[~self.train_list.index.isin(self.train_targets.index)]
-        # Convert to one hot
-        self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
-        self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
-        self.all_labels = [x for x in self.all_labels if len(x)>0]
-        # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
-        for c_label in self.all_labels:
-            if len(c_label)>1: # leave out empty labels
-                self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-
-        print("Update train list to the following shape: ", self.train_list.shape)
+        self.temp_csv = pd.read_csv(self.test_csv)
         print("[VALIDATION...]")
 
 
     def NIH_GENERATOR(self, images_path):
-        for idx, img in self.train_list.iterrows():
-            img = os.path.join(images_path, img['Image Index'])
-            a = cv2.imread(img)
-            if a is None:
-                print("Unable to read image", img)
-                continue
-            if ((idx + 1) % self.skip_steps == 0):
-                print("Loading occurs on ", idx)
+        
+        with open(self.temp_csv, 'r') as f:
+            for image in f.readlines():
+                img = os.path.join(images_path, image)
+                a = cv2.imread(img)
+                if a is None:
+                    print("Unable to read image", img)
+                    continue
+                print("Loaded image: ", img)
 
-            # print("Loaded image: ", idx)
-            # Perprocess the loaded image
-            a = cv2.resize(a, (224, 224))
-            a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-
-            yield (np.array(a.flatten()), self.train_list.loc[idx, self.all_labels].as_matrix())
+                # A bit of preprocessing :D
+                a = cv2.resize(a, (224, 224))
+                a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
+                
+                yield (np.array(a.flatten()), self.train_list.loc[pd.Index.get_loc(image), self.all_labels].as_matrix())
 
     def build_network_graph(self):
 
@@ -417,7 +398,7 @@ class SimpNet(object):
 
                 # Test the network
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
-
+                print("EVAL")
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=step)
 
@@ -454,15 +435,15 @@ class SimpNet(object):
 
             for epoch in range(n_epochs):
                 # Train the model for one epoch
-                step = self.train_network_one_epoch(
-                   sess=sess,
-                   init=None,
-                   saver=saver,
+                # step = self.train_network_one_epoch(
+                #   sess=sess,
+                #   init=None,
+                #   saver=saver,
 
-                   writer=writer,
-                   epoch=epoch,
-                   step=step
-                )
+                #   writer=writer,
+                #   epoch=epoch,
+                #   step=step
+                # )
 
                 # Evaluate the model after each epoch
                 self.evaluate_network(
