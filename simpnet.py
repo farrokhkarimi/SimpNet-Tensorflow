@@ -77,7 +77,6 @@ class SimpNet(object):
             ).batch(self.batch_size).prefetch(2)
 
             img, self.label = my_data.make_one_shot_iterator().get_next()
-
             self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
 
     def initialize_training_data(self):
@@ -89,20 +88,23 @@ class SimpNet(object):
         self.temp_csv = pd.read_csv(self.test_csv)
 
     def nih_data_generator(self, images_path):
-        
         with open(self.temp_csv, 'r') as f:
+            print("HEL1")
             for image in f.readlines():
+                print("HEL2")
                 image = image.strip()
                 img = os.path.join(images_path, image)
                 a = cv2.imread(img)
                 if a is None:
                     print("Unable to read image", img)
                     continue
-
+                
+                print("HEL3")
                 a = cv2.resize(a, (224, 224))
                 a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-
-                yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
+                print("INJAROOOOOO: ", self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
+                yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(),
+                       self.all_labels].as_matrix())
 
     def build_network_graph(self):
 
@@ -373,7 +375,6 @@ class SimpNet(object):
 
                 # Test the network
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
-                print("EVAL")
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=step)
 
