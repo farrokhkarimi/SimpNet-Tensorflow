@@ -48,7 +48,7 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 20
+        self.skip_steps = 250
 
         self.n_test = 25596
 
@@ -58,7 +58,6 @@ class SimpNet(object):
         self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
         self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
         self.all_labels = [x for x in self.all_labels if len(x)>0]
-        # print('All Labels ({}): {}'.format(len(all_labels), all_labels))
         for c_label in self.all_labels:
             if len(c_label)>1: # leave out empty labels
                 self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
