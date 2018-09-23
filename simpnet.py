@@ -419,7 +419,7 @@ class SimpNet(object):
                  # Train the model for one epoch
                 step = self.train_network_one_epoch(
                    sess=sess,
-                   init=None,
+                   init=self.train_init,
                    saver=saver,
                    writer=writer,
                    epoch=epoch,
@@ -429,7 +429,7 @@ class SimpNet(object):
                 # Evaluate the model after each epoch
                 self.evaluate_network(
                     sess=sess,
-                    init=None,
+                    init=self.test_init,
                     writer=writer,
                     epoch=epoch,
                     step=step
@@ -438,6 +438,7 @@ class SimpNet(object):
         writer.close()
 
 if __name__ == '__main__':
+    os.environ["CUDA_VISIBLE_DEVICES"] = '1'
     model = SimpNet()
     model.build_network_graph()
     model.train(n_epochs=50)
