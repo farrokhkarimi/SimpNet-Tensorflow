@@ -72,7 +72,7 @@ class SimpNet(object):
             test_data_generator = lambda: self.nih_data_generator(images_path=self.data_path, from_target=self.test_csv)
 
             train_data = tf.data.Dataset.from_generator(
-            generator=data_generator,
+            generator=train_data_generator,
             output_types=(tf.float32, tf.float32),
             output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
             ).batch(self.batch_size).prefetch(2)
