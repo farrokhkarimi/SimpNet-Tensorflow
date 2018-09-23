@@ -92,7 +92,6 @@ class SimpNet(object):
             self.test_init = iterator.make_initializer(test_data)
 
     def nih_data_generator(self, images_path, from_target):
-        print("***********GEN***********")
         with open(from_target, 'r') as f:
             for image in f.readlines():
                 image = image.strip()
@@ -304,9 +303,6 @@ class SimpNet(object):
         with tf.name_scope('predict'):
             preds = tf.nn.softmax(self.logits)
 
-            print('predictions shape {0}'.format(preds.shape))
-            print('labels shape {0}'.format(self.label.shape))
-
             correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(self.label, 1))
 
             # Summation of all probabilities of all correct predictions
@@ -337,7 +333,6 @@ class SimpNet(object):
                     print("[INFO] Loss at Step {0}: {1}".format(step, step_loss))
                     # Save learned weights
                     saver.save(sess, 'checkpoints/simpnet_train', step)
-                    break 
 
         except tf.errors.OutOfRangeError:
             pass
@@ -371,7 +366,6 @@ class SimpNet(object):
         self.traininig = False
 
         total_truth = 0
-        l_step = 0
 
         try:
             while True:
@@ -380,15 +374,12 @@ class SimpNet(object):
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=step)
-                l_step += 1
-                if((l_step + 1) % self.skip_steps == 0):
-                    break
 
         except tf.errors.OutOfRangeError:
             pass
 
 
-        print("[INFO] Accuracy at Epoch {0}: {1}".format(epoch, total_truth/self.n_test))
+        print("[INFO] Test Accuracy at Epoch {0}: {1}".format(epoch, total_truth/self.n_test))
 
 
     def train(self, n_epochs):
