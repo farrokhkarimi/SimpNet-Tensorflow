@@ -48,7 +48,7 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 200
+        self.skip_steps = 20
 
         self.n_test = 25596
 
@@ -67,31 +67,34 @@ class SimpNet(object):
     def get_data(self):
 
         with tf.name_scope('data'):
+            
+            train_data_generator = lambda: self.nih_data_generator(images_path=self.data_path, from_target=self.train_val_csv)
+            test_data_generator = lambda: self.nih_data_generator(images_path=self.data_path, from_target=self.test_csv)
 
-            data_generator = lambda: self.nih_data_generator(images_path=self.data_path)
-
-            my_data = tf.data.Dataset.from_generator(
+            train_data = tf.data.Dataset.from_generator(
             generator=data_generator,
             output_types=(tf.float32, tf.float32),
             output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
             ).batch(self.batch_size).prefetch(2)
+            
+            test_data = tf.data.Dataset.from_generator(
+            generator=test_data_generator,
+            output_types=(tf.float32, tf.float32),
+            output_shapes=(tf.TensorShape([None]), tf.TensorShape([None]))
+            ).batch(self.batch_size).prefetch(2)
 
-            img, self.label = my_data.make_one_shot_iterator().get_next()
+            iterator = train_data.make_initializable_iterator()
+
+            img, self.label = iterator.get_next()
             self.img = tf.reshape(img, [-1, CNN_INPUT_HEIGHT, CNN_INPUT_WIDTH, CNN_INPUT_CHANNELS])
 
-    def initialize_training_data(self):
-        print("[INFO]: Initialized Training...")
-        self.temp_csv = pd.read_csv(self.train_val_csv)
+            self.train_init = iterator.make_initializer(train_data)
+            self.test_init = iterator.make_initializer(test_data)
 
-    def initialize_test_data(self):
-        print("[INFO]: Initialized Validation...")
-        self.temp_csv = pd.read_csv(self.test_csv)
-
-    def nih_data_generator(self, images_path):
-        with open(self.temp_csv, 'r') as f:
-            print("HEL1")
+    def nih_data_generator(self, images_path, from_target):
+        print("***********GEN***********")
+        with open(from_target, 'r') as f:
             for image in f.readlines():
-                print("HEL2")
                 image = image.strip()
                 img = os.path.join(images_path, image)
                 a = cv2.imread(img)
@@ -99,12 +102,9 @@ class SimpNet(object):
                     print("Unable to read image", img)
                     continue
                 
-                print("HEL3")
                 a = cv2.resize(a, (224, 224))
                 a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-                print("INJAROOOOOO: ", self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
-                yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(),
-                       self.all_labels].as_matrix())
+                yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
 
     def build_network_graph(self):
 
@@ -314,7 +314,8 @@ class SimpNet(object):
 
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
-        self.initialize_training_data()
+        sess.run(init)
+        print("[INFO]: Initialized Training...")
         self.training = True
 
         n_batches = 0
@@ -333,17 +334,17 @@ class SimpNet(object):
 
                 # Stepwise loss
                 if ((step + 1) % self.skip_steps) == 0:
-                    print("loss at step {0}: {1}".format(step, step_loss))
+                    print("[INFO] Loss at Step {0}: {1}".format(step, step_loss))
                     # Save learned weights
                     saver.save(sess, 'checkpoints/simpnet_train', step)
-                    break
+                    break 
 
         except tf.errors.OutOfRangeError:
             pass
 
         # Overall loss
-        print("Average loss at epoch {0}: {1}".format(epoch, total_loss/11212))
-        print("Took {0} seconds...".format(time.time() - start_time))
+        print("[INFO] Average Training Loss at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
+        print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
 
@@ -365,10 +366,12 @@ class SimpNet(object):
 
     def evaluate_network(self, sess, init, writer, epoch, step):
         start_time = time.time()
-        self.initialize_test_data()
+        sess.run(init)
+        print("[INFO]: Initialized Validation...")
         self.traininig = False
 
         total_truth = 0
+        l_step = 0
 
         try:
             while True:
@@ -377,12 +380,15 @@ class SimpNet(object):
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
                 total_truth += batch_accuracy
                 writer.add_summary(step_summary, global_step=step)
+                l_step += 1
+                if((l_step + 1) % self.skip_steps == 0):
+                    break
 
         except tf.errors.OutOfRangeError:
             pass
 
 
-        print("Accuracy at step {0}: {1}".format(epoch, total_truth/self.n_test))
+        print("[INFO] Accuracy at Epoch {0}: {1}".format(epoch, total_truth/self.n_test))
 
 
     def train(self, n_epochs):
@@ -434,4 +440,4 @@ class SimpNet(object):
 if __name__ == '__main__':
     model = SimpNet()
     model.build_network_graph()
-    model.train(n_epochs=20)
+    model.train(n_epochs=50)
