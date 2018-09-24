@@ -14,6 +14,37 @@ Bio-intelligence Center, [Sharif University of Technology](http://www.en.sharif.
 This repository contains the first unofficial implementation of SimpNet architecture described in the paper "
 Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (https://arxiv.org/abs/1802.06205).
 
+## Installation:
+
+The instructions are tested on Ubuntu 16.04 with python 3.6 and tensorflow 1.10.0 with GPU support. 
+- Clone the SimpNet	 repository:
+    ```Shell
+    git clone https://github.com/hexpheus/SimpNet-Tensorflow.git
+    ```
+
+- Setup virtual environment:
+    1. By default we use Python2.7. Create the virtual environment
+        ```Shell
+        virtualenv env
+        ```
+
+    2. Activate the virtual environment
+        ```Shell
+        source env/bin/activate
+        ```
+
+- Use pip to install required Python packages:
+    ```Shell
+    pip install -r requirements.txt
+    ```
+
+### Visualization
+
+- We can monitor the training process using tensorboard.
+    ```Shell
+    tensorboard --logdir graphs/simpnet/
+    ```
+    Tensorboard displays information such as training loss, evaluation accuracy, visualization of detection results in the training process, which are helpful for debugging and tunning models, as shown below:
 
 ### MNIST Performance
 
