@@ -15,6 +15,23 @@ This repository contains the first unofficial implementation of SimpNet architec
 Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (https://arxiv.org/abs/1802.06205).
 
 
+### MNIST Performance
+
+Here is the **loss** and **accuracy** results after running the model on the MNIST dataset. Results shown here are provided after 18 epochs of training.
+
+#### Accuracy
+
+<p align="center">
+    <img src="https://github.com/hexpheus/SimpNet-Tensorflow/blob/master/result/mnist_acc.png">
+</p>
+
+---
+
+#### Loss
+<p align="center">
+    <img src="https://github.com/hexpheus/SimpNet-Tensorflow/blob/master/result/mnist_loss.png">
+</p>
+
 ### Citation
 
 If you use these models in your research, please cite:
