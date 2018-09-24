@@ -14,7 +14,7 @@ Bio-intelligence Center, [Sharif University of Technology](http://www.en.sharif.
 This repository contains the first unofficial implementation of SimpNet architecture described in the paper "
 Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (https://arxiv.org/abs/1802.06205).
 
-## Installation:
+### Installation
 
 The instructions are tested on Ubuntu 16.04 with python 3.6 and tensorflow 1.10.0 with GPU support. 
 - Clone the SimpNet	 repository:
