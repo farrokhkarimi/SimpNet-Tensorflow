@@ -23,7 +23,7 @@ The instructions are tested on Ubuntu 16.04 with python 3.6 and tensorflow 1.10.
     ```
 
 - Setup virtual environment:
-    1. By default we use Python2.7. Create the virtual environment
+    1. By default we use Python 3.6. Create the virtual environment
         ```Shell
         virtualenv env
         ```
