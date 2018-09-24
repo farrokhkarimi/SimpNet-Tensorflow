@@ -8,15 +8,15 @@
 # ========================================
 
 import tensorflow as tf
+import numpy as np
 import pandas as pd
-from cnn_util import conv_bn_sc_relu, saf_pool
-from cnn_config import *
+import cv2
+import os
 import time
 from itertools import chain
-import cv2
-import utils as utils
-import numpy as np
-import os
+from cnn_util import conv_bn_sc_relu, saf_pool
+from cnn_config import *
+
 
 class SimpNet(object):
 
