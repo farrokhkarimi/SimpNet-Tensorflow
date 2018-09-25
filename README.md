@@ -14,6 +14,17 @@ Bio-intelligence Center, [Sharif University of Technology](http://www.en.sharif.
 This repository contains the first unofficial implementation of SimpNet architecture described in the paper "
 Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (https://arxiv.org/abs/1802.06205).
 
+### Todo
+
+- [ ] Xavier weight initialization for layers {1, 2, 6, 7, 8, 9, 10, 11, 12, 13}
+- [ ] Gaussian weight initialization for layers {3, 4, 5}
+- [ ] Feed flipped images
+- [ ] Shuffle input data
+- [ ] Adaptive learning rate for the Adam
+- [ ] Moving average on the batch norms (M.A. Fraction = 0.95)
+- [ ] Fix SafPool dropout rates
+
+
 ### Installation
 
 The instructions are tested on Ubuntu 16.04 with python 3.6 and tensorflow 1.10.0 with GPU support. 
