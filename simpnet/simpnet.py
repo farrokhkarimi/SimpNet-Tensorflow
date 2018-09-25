@@ -16,7 +16,7 @@ import time
 from itertools import chain
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
-
+from utils import *
 
 class SimpNet(object):
 
