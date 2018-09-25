@@ -7,7 +7,7 @@
 ---
 
 By [Ali Gholami](https://hexpheus.github.io),
-Bio-intelligence Center, [Sharif University of Technology](http://www.en.sharif.edu/).
+Bio-intelligence Research Unit, [Sharif University of Technology](http://www.en.sharif.edu/).
 
 ### Introduction
 
