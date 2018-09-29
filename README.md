@@ -59,7 +59,7 @@ The instructions are tested on Ubuntu 16.04 with python 3.6 and tensorflow 1.10.
 
 ### MNIST Performance
 
-Here is the **loss** and **accuracy** results after running the model on the MNIST dataset. Results shown here are provided after 18 epochs of training.
+Here is the **loss** and **accuracy** results after running the model on the MNIST dataset. Results shown here are provided after 18 epochs of training. **Note** that the accuracy provided here is based on the number of true predictions in each batch. Batch size is 140 in the following training.
 
 #### Accuracy
 
