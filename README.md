@@ -22,8 +22,8 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 - [x] Shuffle input data
 - [ ] Adaptive learning rate for the Adam
 - [ ] Moving average on the batch norms (M.A. Fraction = 0.95)
-- [ ] Fix SafPool dropout rates
-
+- [*] Fix SafPool dropout rates
+- [ ] Multi-label accuracy reports
 
 ### Installation
 
