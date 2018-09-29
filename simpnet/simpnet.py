@@ -382,8 +382,8 @@ class SimpNet(object):
 
     def train(self, n_epochs):
 
-        utils.safe_mkdir('checkpoints')
-        utils.safe_mkdir('checkpoints/simpnet_train')
+        safe_mkdir('checkpoints')
+        safe_mkdir('checkpoints/simpnet_train')
         writer = tf.summary.FileWriter('./graphs/simpnet', graph=tf.get_default_graph())
 
         with tf.Session() as sess:
