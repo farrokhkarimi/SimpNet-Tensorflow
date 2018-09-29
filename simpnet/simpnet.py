@@ -125,7 +125,7 @@ class SimpNet(object):
         )
     
         conv2 = conv_bn_sc_relu(
-            inputs=p_conv1,
+            inputs=conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
             stride=1,
