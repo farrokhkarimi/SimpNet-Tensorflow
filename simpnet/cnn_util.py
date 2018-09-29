@@ -30,7 +30,8 @@ def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name, keep_p
         # Perform a dropout on the input
         do_scaled_batch = tf.nn.dropout(
             x=scaled_batch,
-            keep_prob=keep_prob
+            keep_prob=keep_prob,
+            name='dropout'
         )
 
     # Perform a relu and return
