@@ -27,6 +27,7 @@ def conv_bn_sc_relu(inputs, filters, k_size, stride, padding, scope_name):
         # Scale the normalized batch
         scaled_batch = scale(inputs=norm, scope_name='scale')
 
+        # Perform a dropout on 
     # Perform a relu and return
     # return tf.nn.relu(scaled_batch + biases, name=scope.name)
     return tf.nn.relu(scaled_batch + biases, name='relu')

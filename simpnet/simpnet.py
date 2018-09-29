@@ -120,16 +120,18 @@ class SimpNet(object):
             k_size=CONV1_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_1'
+            scope_name='conv_1',
+            keep_prob=self.keep_prob
         )
-
+    
         conv2 = conv_bn_sc_relu(
-            inputs=conv1,
+            inputs=p_conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_2'
+            scope_name='conv_2',
+            keep_prob=self.keep_prob
         )
 
         conv3 = conv_bn_sc_relu(
@@ -138,7 +140,8 @@ class SimpNet(object):
             k_size=CONV3_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_3'
+            scope_name='conv_3',
+            keep_prob=self.keep_prob
         )
 
         conv4 = conv_bn_sc_relu(
@@ -147,7 +150,8 @@ class SimpNet(object):
             k_size=CONV4_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_4'
+            scope_name='conv_4',
+            keep_prob=self.keep_prob
         )
 
         conv5 = conv_bn_sc_relu(
@@ -156,7 +160,8 @@ class SimpNet(object):
             k_size=CONV5_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_5'
+            scope_name='conv_5',
+            keep_prob=self.keep_prob
         )
 
         pool1 = saf_pool(
@@ -173,7 +178,8 @@ class SimpNet(object):
             k_size=CONV6_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_6'
+            scope_name='conv_6',
+            keep_prob=self.keep_prob
         )
 
         conv7 = conv_bn_sc_relu(
@@ -182,7 +188,8 @@ class SimpNet(object):
             k_size=CONV7_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_7'
+            scope_name='conv_7',
+            keep_prob=self.keep_prob
         )
 
         conv8 = conv_bn_sc_relu(
@@ -191,7 +198,8 @@ class SimpNet(object):
             k_size=CONV8_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_8'
+            scope_name='conv_8',
+            keep_prob=self.keep_prob
         )
 
         conv9 = conv_bn_sc_relu(
@@ -200,7 +208,8 @@ class SimpNet(object):
             k_size=CONV9_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_9'
+            scope_name='conv_9',
+            keep_prob=self.keep_prob
         )
 
         conv10 = conv_bn_sc_relu(
@@ -209,7 +218,8 @@ class SimpNet(object):
             k_size=CONV10_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_10'
+            scope_name='conv_10',
+            keep_prob=self.keep_prob
         )
 
         pool2 = saf_pool(
@@ -226,7 +236,8 @@ class SimpNet(object):
             k_size=CONV11_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_11'
+            scope_name='conv_11',
+            keep_prob=self.keep_prob
         )
 
         conv12 = conv_bn_sc_relu(
@@ -236,6 +247,7 @@ class SimpNet(object):
             stride=1,
             padding='SAME',
             scope_name='conv_12',
+            keep_prob=self.keep_prob
         )
 
         conv13 = conv_bn_sc_relu(
@@ -244,7 +256,8 @@ class SimpNet(object):
             k_size=CONV13_FILTER_SIZE,
             stride=1,
             padding='SAME',
-            scope_name='conv_13'
+            scope_name='conv_13',
+            keep_prob=self.keep_prob
         )
 
         global_pool = saf_pool(
