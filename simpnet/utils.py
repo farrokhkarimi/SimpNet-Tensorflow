@@ -36,6 +36,3 @@ def shuffle_csv(path):
             target.write(line)
 
     return shuffled_csv
-
-
-ccv = shuffle_csv('../data/train_val_list.csv')
