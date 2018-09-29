@@ -16,10 +16,10 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 
 ### Todo
 
-- [-] Xavier weight initialization for layers {1, 2, 6, 7, 8, 9, 10, 11, 12, 13}
-- [-] Gaussian weight initialization for layers {3, 4, 5}
+- [x] Xavier weight initialization for layers {1, 2, 6, 7, 8, 9, 10, 11, 12, 13}
+- [x] Gaussian weight initialization for layers {3, 4, 5}
 - [ ] Feed flipped images
-- [ ] Shuffle input data
+- [x] Shuffle input data
 - [ ] Adaptive learning rate for the Adam
 - [ ] Moving average on the batch norms (M.A. Fraction = 0.95)
 - [ ] Fix SafPool dropout rates
