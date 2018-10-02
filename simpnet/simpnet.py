@@ -391,6 +391,8 @@ class SimpNet(object):
 
 
         print("[INFO] Test Accuracy at Epoch {0}: {1}".format(epoch, total_truth/self.n_test))
+        print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
+
 
 
     def train(self, n_epochs):
