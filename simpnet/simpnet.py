@@ -47,7 +47,7 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 250
+        self.skip_steps = 500
 
         self.n_test = 25596
 
@@ -400,7 +400,7 @@ class SimpNet(object):
         safe_mkdir('checkpoints')
         safe_mkdir('checkpoints/simpnet_train')
         train_writer = tf.summary.FileWriter('./graphs/simpnet_train', graph=tf.get_default_graph())
-        test_writer = tf.summary.FileWriter('./graphs/simpnet_test', graph=tf.get_default_graph())
+        test_writer = tf.summary.FileWriter('./graphs/simpnet_test')
 
         with tf.Session() as sess:
 
