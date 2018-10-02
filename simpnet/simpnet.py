@@ -35,7 +35,7 @@ class SimpNet(object):
         self.test_csv = shuffle_csv('test_list.csv')
 
         # Number of images in each batch
-        self.batch_size = 10
+        self.batch_size = 8
 
         # Number of classes
         self.n_classes = 14
@@ -397,7 +397,8 @@ class SimpNet(object):
 
         safe_mkdir('checkpoints')
         safe_mkdir('checkpoints/simpnet_train')
-        writer = tf.summary.FileWriter('./graphs/simpnet', graph=tf.get_default_graph())
+        train_writer = tf.summary.FileWriter('./graphs/simpnet_train', graph=tf.get_default_graph())
+        test_writer = tf.summary.FileWriter('./graphs/simpnet_test', graph=tf.get_default_graph())
 
         with tf.Session() as sess:
 
@@ -418,12 +419,12 @@ class SimpNet(object):
             step = self.gstep.eval()
 
             for epoch in range(n_epochs):
-                 # Train the model for one epoch
+                # Train the model for one epoch
                 step = self.train_network_one_epoch(
                    sess=sess,
                    init=self.train_init,
                    saver=saver,
-                   writer=writer,
+                   writer=train_writer,
                    epoch=epoch,
                    step=step
                 )
@@ -432,7 +433,7 @@ class SimpNet(object):
                 self.evaluate_network(
                     sess=sess,
                     init=self.test_init,
-                    writer=writer,
+                    writer=test_writer,
                     epoch=epoch,
                     step=step
                 )
@@ -440,7 +441,7 @@ class SimpNet(object):
         writer.close()
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+    os.environ["CUDA_VISIBLE_DEVICES"] = '0, 1'
     model = SimpNet()
     model.build_network_graph()
     model.train(n_epochs=50)
