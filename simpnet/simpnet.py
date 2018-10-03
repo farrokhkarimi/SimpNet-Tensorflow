@@ -26,7 +26,7 @@ class SimpNet(object):
         self.keep_prob = 0.7
 
         # Learning rate
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.001
 
         # Setup the data path (folder should contain train and test folders inside itself)
         self.data_path = './images/images'
@@ -318,7 +318,7 @@ class SimpNet(object):
 
             # Summation of all probabilities of all correct predictions
             self.accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
-
+    
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
         sess.run(init)
@@ -327,21 +327,24 @@ class SimpNet(object):
 
         n_batches = 0
         total_loss = 0
+        total_truth = 0
 
         try:
             while True:
 
                 # Run the training graph nodes
-                _, step_loss, step_summary = sess.run([self.opt, self.loss_val, self.summary_op])
+                _, step_loss, step_summary, step_accuracy = sess.run([self.opt, self.loss_val, self.summary_op, self.accuracy])
 
                 step += 1
                 total_loss += step_loss
                 n_batches += 1
+                total_truth += step_accuracy
+
                 writer.add_summary(step_summary, global_step=step)
 
                 # Stepwise loss
                 if ((step + 1) % self.skip_steps) == 0:
-                    print("[INFO] Loss at Step {0}: {1}".format(step, step_loss))
+                    print("[LOSS - TRAIN (STEP)] at Step {0}: {1}".format(step, step_loss))
                     # Save learned weights
                     saver.save(sess, 'checkpoints/simpnet_train', step)
 
@@ -349,7 +352,12 @@ class SimpNet(object):
             pass
 
         # Overall loss
-        print("[INFO] Average Training Loss at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
+        print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
+
+        # Epoch accuracy
+        epoch_accuracy = (total_truth/(n_batches * self.batch_size)) * 100
+
+        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, epoch_accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
@@ -377,6 +385,7 @@ class SimpNet(object):
         self.traininig = False
 
         total_truth = 0
+        n_batches = 0
 
         try:
             while True:
@@ -384,13 +393,14 @@ class SimpNet(object):
                 # Test the network
                 batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
                 total_truth += batch_accuracy
+                n_batches += 1
                 writer.add_summary(step_summary, global_step=step)
 
         except tf.errors.OutOfRangeError:
             pass
 
-
-        print("[INFO] Test Accuracy at Epoch {0}: {1}".format(epoch, total_truth/self.n_test))
+        validation_accuracy = (total_truth / (n_batches * self.batch_size)) * 100
+        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, validation_accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
 
@@ -446,4 +456,4 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = '0, 1'
     model = SimpNet()
     model.build_network_graph()
-    model.train(n_epochs=50)
+    model.train(n_epochs=10)
