@@ -449,11 +449,11 @@ class SimpNet(object):
                     epoch=epoch,
                     step=step
                 )
-
-        writer.close()
+        train_writer.close()
+        test_writer.close()
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = '0, 1'
     model = SimpNet()
     model.build_network_graph()
-    model.train(n_epochs=10)
+    model.train(n_epochs=50)
