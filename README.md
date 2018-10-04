@@ -22,7 +22,7 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 - [x] Shuffle input data
 - [ ] Adaptive learning rate for the Adam
 - [ ] Moving average on the batch norms (M.A. Fraction = 0.95)
-- [*] Fix SafPool dropout rates
+- [x] Fix SafPool dropout rates
 - [ ] Multi-label accuracy reports
 
 ### Installation
@@ -87,4 +87,7 @@ If you use these models in your research, please cite:
 
 ### Official Implementation
 You can find the official implementation [here](https://github.com/Coderx7/SimpNet).
+
+### Important Note
+This model has yielded stunning results on both MNIST and Fashion MNIST datasets. Other datasets should be tested for evaluation.
 
