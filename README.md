@@ -24,6 +24,8 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 - [ ] Moving average on the batch norms (M.A. Fraction = 0.95)
 - [x] Fix SafPool dropout rates
 - [ ] Multi-label accuracy reports
+- [ ] LOSS = 1 - ACC
+- [ ] Learning Rate Visualization
 
 ### Installation
 
