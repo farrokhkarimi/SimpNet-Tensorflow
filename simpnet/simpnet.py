@@ -23,7 +23,7 @@ class SimpNet(object):
     def __init__(self):
 
         # Dropout rate
-        self.keep_prob = 0.7
+        self.keep_prob = 1
 
         # Learning rate
         self.learning_rate = 0.001
