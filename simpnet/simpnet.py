@@ -296,9 +296,11 @@ class SimpNet(object):
     def optimize(self):
 
         with tf.name_scope('optimizer'):
-            self.opt = tf.train.MomentumOptimizer(
+            self.opt = tf.train.AdadeltaOptimizer(
                 learning_rate=self.learning_rate,
-                momentum=0.9,
+                rho=0.95,
+                epsilon=1e-08,
+                name='Adadelta'
             ).minimize(self.loss_val, global_step=self.gstep)
 
     def summary(self):
