@@ -26,6 +26,8 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 - [ ] Multi-label accuracy reports
 - [ ] LOSS = 1 - ACC
 - [ ] Learning Rate Visualization
+- [ ] Ada-Delta Optimization
+- [x] Convolution Strides Optimization
 
 ### Installation
 

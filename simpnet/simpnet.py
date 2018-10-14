@@ -53,6 +53,10 @@ class SimpNet(object):
 
         self.train_list = pd.read_csv(self.main_csv)
 
+        # Initial data preprocessing
+        self.preprocess()
+
+    def preprocess(self):
         # Convert to one hot
         self.train_list['Finding Labels'] = self.train_list['Finding Labels'].map(lambda x: x.replace('No Finding', ''))
         self.all_labels = np.unique(list(chain(*self.train_list['Finding Labels'].map(lambda x: x.split('|')).tolist())))
@@ -60,7 +64,6 @@ class SimpNet(object):
         for c_label in self.all_labels:
             if len(c_label)>1: # leave out empty labels
                 self.train_list[c_label] = self.train_list['Finding Labels'].map(lambda finding: 1.0 if c_label in finding else 0)
-
 
     def get_data(self):
 
@@ -118,7 +121,7 @@ class SimpNet(object):
             inputs=self.img,
             filters=CONV1_NUM_FILTERS,
             k_size=CONV1_FILTER_SIZE,
-            stride=1,
+            stride=2,
             padding='SAME',
             scope_name='conv_1',
             keep_prob=self.keep_prob
@@ -128,7 +131,7 @@ class SimpNet(object):
             inputs=conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
-            stride=1,
+            stride=2,
             padding='SAME',
             scope_name='conv_2',
             keep_prob=self.keep_prob
@@ -138,7 +141,7 @@ class SimpNet(object):
             inputs=conv2,
             filters=CONV3_NUM_FILTERS,
             k_size=CONV3_FILTER_SIZE,
-            stride=1,
+            stride=2,
             padding='SAME',
             scope_name='conv_3',
             keep_prob=self.keep_prob
