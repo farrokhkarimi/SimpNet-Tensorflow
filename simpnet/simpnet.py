@@ -35,7 +35,7 @@ class SimpNet(object):
         self.test_csv = shuffle_csv('test_list.csv')
 
         # Number of images in each batch
-        self.batch_size = 8
+        self.batch_size = 20
 
         # Number of classes
         self.n_classes = 14
@@ -296,12 +296,9 @@ class SimpNet(object):
     def optimize(self):
 
         with tf.name_scope('optimizer'):
-            self.opt = tf.train.AdamOptimizer(
+            self.opt = tf.train.MomentumOptimizer(
                 learning_rate=self.learning_rate,
-                beta1=0.9,
-                beta2=0.999,
-                epsilon=1e-8,
-                name='Adam'
+                momentum=0.9,
             ).minimize(self.loss_val, global_step=self.gstep)
 
     def summary(self):
