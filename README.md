@@ -28,6 +28,7 @@ Towards Principled Design of Deep Convolutional Networks: Introducing SimpNet" (
 - [ ] Learning Rate Visualization
 - [x] AdaDelta Optimizer
 - [x] Convolution Strides Optimization
+- [x] Multilabel Confusion Matrix
 
 ### Installation
 

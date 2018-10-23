@@ -54,6 +54,8 @@ class SimpNet(object):
 
         self.train_list = pd.read_csv(self.main_csv)
 
+        self.class_list = ['Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia', 'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
+
         # Initial data preprocessing
         self.preprocess()
 
@@ -163,7 +165,7 @@ class SimpNet(object):
     summary = tfplot.figure.to_summary(fig, tag=tensor_name)
     return summary
 
-    
+
     def build_network_graph(self):
 
         self.get_data()
@@ -375,6 +377,18 @@ class SimpNet(object):
             preds = tf.nn.softmax(self.logits)
 
             correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(self.label, 1))
+            
+            # Draw confusion matrix
+            checkpoint_dir = 'checkpoints/'
+            if(self.training == True):
+                checkpoint_dir += 'simpnet_train'
+            else:
+                checkpoint_dir += 'simpnet_test'
+                    
+            img_d_summary_dir = os.path.join(checkpoint_dir, "summaries", "img")
+            img_d_summary_writer = tf.summary.FileWriter(img_d_summary_dir, sess.graph)
+            img_d_summary = self.plot_confusion_matrix(self.label, preds, self.class_list, tensor_name='dev/cm')
+            img_d_summary_writer.add_summary(img_d_summary, current_step)
 
             # Summation of all probabilities of all correct predictions
             self.accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
