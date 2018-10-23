@@ -36,7 +36,7 @@ class SimpNet(object):
         self.test_csv = shuffle_csv('test_list.csv')
 
         # Number of images in each batch
-        self.batch_size = 10
+        self.batch_size = 12
 
         # Number of classes
         self.n_classes = 14
@@ -105,7 +105,7 @@ class SimpNet(object):
                     print("Unable to read image", img)
                     continue
                 
-                a = cv2.resize(a, (512, 512))
+                a = cv2.resize(a, (256, 256))
 
                 # Normalize
                 a = a / 255.0
@@ -191,7 +191,7 @@ class SimpNet(object):
             inputs=conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
-            stride=2,
+            stride=1,
             padding='SAME',
             scope_name='conv_2',
             keep_prob=self.keep_prob
@@ -347,7 +347,7 @@ class SimpNet(object):
     def loss(self):
 
         with tf.name_scope('loss'):
-            entropy = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logits)
+            entropy = tf.nn.sigmoid_cross_entropy_with_logits(labels=self.label, logits=self.logits)
 
             # Loss is mean of error on all dimensions
             self.loss_val = tf.reduce_mean(entropy, name='loss')
@@ -376,8 +376,12 @@ class SimpNet(object):
         with tf.name_scope('predict'):
             preds = tf.nn.softmax(self.logits)
 
-            correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(self.label, 1))
+            ground_truth  = tf.equal(self.label, tf.ones(shape=tf.shape(preds)))
+            preds = tf.map_fn(lambda x: 1 if x > 0.5 else 0, preds)     # Since results are coming out of a sigmoid
             
+            self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
+            self.total_count = tf.reduce_sum(ground_truth)
+
             # Draw confusion matrix
             checkpoint_dir = 'checkpoints/'
             if(self.training == True):
@@ -390,8 +394,6 @@ class SimpNet(object):
             img_d_summary = self.plot_confusion_matrix(self.label, preds, self.class_list, tensor_name='dev/cm')
             img_d_summary_writer.add_summary(img_d_summary, self.gstep)
 
-            # Summation of all probabilities of all correct predictions
-            self.accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
     
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
@@ -402,17 +404,19 @@ class SimpNet(object):
         n_batches = 0
         total_loss = 0
         total_truth = 0
+        total_total_count = 0
 
         try:
             while True:
 
                 # Run the training graph nodes
-                _, step_loss, step_summary, step_accuracy = sess.run([self.opt, self.loss_val, self.summary_op, self.accuracy])
+                _, step_loss, step_summary, true_predicted_count, total_count = sess.run([self.opt, self.loss_val, self.summary_op, self.true_predicted_count, self.total_count])
 
                 step += 1
                 total_loss += step_loss
                 n_batches += 1
-                total_truth += step_accuracy
+                total_truth += true_predicted_count
+                total_total_count += total_count
 
                 writer.add_summary(step_summary, global_step=step)
 
@@ -429,7 +433,7 @@ class SimpNet(object):
         print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
 
         # Epoch accuracy
-        epoch_accuracy = (total_truth/(n_batches * self.batch_size)) * 100
+        epoch_accuracy = (total_truth/total_total_count) * 100
 
         print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, epoch_accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
@@ -459,21 +463,23 @@ class SimpNet(object):
         self.traininig = False
 
         total_truth = 0
+        total_total_count = 0
         n_batches = 0
 
         try:
             while True:
 
                 # Test the network
-                batch_accuracy, step_summary = sess.run([self.accuracy, self.summary_op])
-                total_truth += batch_accuracy
+                true_predicted_count, total_count, step_summary = sess.run([self.true_predicted_count, self.total_count, self.summary_op])
+                total_truth += true_predicted_count
+                total_total_count += total_count
                 n_batches += 1
                 writer.add_summary(step_summary, global_step=step)
 
         except tf.errors.OutOfRangeError:
             pass
 
-        validation_accuracy = (total_truth / (n_batches * self.batch_size)) * 100
+        validation_accuracy = (total_truth / total_total_count) * 100
         print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, validation_accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
