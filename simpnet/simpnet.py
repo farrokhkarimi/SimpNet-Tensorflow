@@ -106,7 +106,7 @@ class SimpNet(object):
                     continue
                 
                 a = cv2.resize(a, (512, 512))
-                
+
                 # Normalize
                 a = a / 255.0
                 
@@ -388,7 +388,7 @@ class SimpNet(object):
             img_d_summary_dir = os.path.join(checkpoint_dir, "summaries", "img")
             img_d_summary_writer = tf.summary.FileWriter(img_d_summary_dir, sess.graph)
             img_d_summary = self.plot_confusion_matrix(self.label, preds, self.class_list, tensor_name='dev/cm')
-            img_d_summary_writer.add_summary(img_d_summary, current_step)
+            img_d_summary_writer.add_summary(img_d_summary, self.gstep)
 
             # Summation of all probabilities of all correct predictions
             self.accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
