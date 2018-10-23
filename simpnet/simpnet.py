@@ -433,9 +433,9 @@ class SimpNet(object):
         print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
 
         # Epoch accuracy
-        epoch_accuracy = (total_truth/total_total_count) * 100
+        self.accuracy = (total_truth/total_total_count) * 100
 
-        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, epoch_accuracy))
+        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, self.accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
@@ -479,8 +479,8 @@ class SimpNet(object):
         except tf.errors.OutOfRangeError:
             pass
 
-        validation_accuracy = (total_truth / total_total_count) * 100
-        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, validation_accuracy))
+        self.accuracy = (total_truth / total_total_count) * 100
+        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, self.accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
 
