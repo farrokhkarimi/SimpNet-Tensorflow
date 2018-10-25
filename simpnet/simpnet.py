@@ -105,9 +105,9 @@ class SimpNet(object):
                     print("Unable to read image", img)
                     continue
                 
-                a = cv2.resize(a, (224, 224))
+                a = cv2.resize(a, (256, 256))
                 a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-                
+
                 # Normalize
                 a = a / 255.0
                 
