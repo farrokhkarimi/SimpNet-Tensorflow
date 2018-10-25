@@ -386,7 +386,8 @@ class SimpNet(object):
             self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
             self.total_count = tf.reduce_sum(ground_truth)
             
-            self.step_accuracy = tf.true_predicted_count
+            self.step_accuracy = self.true_predicted_count
+            
             # # Draw confusion matrix
             # checkpoint_dir = 'checkpoints/'
             # if(self.training == True):
