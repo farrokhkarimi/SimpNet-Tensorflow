@@ -30,10 +30,10 @@ class SimpNet(object):
         self.learning_rate = 0.001
 
         # Setup the data path (folder should contain train and test folders inside itself)
-        self.data_path = './images/images'
-        self.main_csv = 'Data_Entry_2017.csv'
-        self.train_val_csv = shuffle_csv('train_val_list.csv')
-        self.test_csv = shuffle_csv('test_list.csv')
+        self.data_path = '../images/images'
+        self.main_csv = '../Data_Entry_2017.csv'
+        self.train_val_csv = shuffle_csv('../train_val_list.csv')
+        self.test_csv = shuffle_csv('../test_list.csv')
 
         # Number of images in each batch
         self.batch_size = 12
@@ -356,11 +356,9 @@ class SimpNet(object):
     def optimize(self):
 
         with tf.name_scope('optimizer'):
-            self.opt = tf.train.AdadeltaOptimizer(
+            self.opt = tf.train.GradientDescentOptimizer(
                 learning_rate=self.learning_rate,
-                rho=0.95,
-                epsilon=1e-08,
-                name='Adadelta'
+                name='SGD'
             ).minimize(self.loss_val, global_step=self.gstep)
 
     def summary(self):
@@ -374,10 +372,16 @@ class SimpNet(object):
     def eval(self):
 
         with tf.name_scope('predict'):
-            preds = tf.nn.softmax(self.logits)
+            preds = tf.nn.sigmoid(self.logits)
 
             ground_truth  = tf.equal(self.label, tf.ones(shape=tf.shape(preds)))
-            preds = tf.map_fn(lambda x: 1 if x > 0.5 else 0, preds)     # Since results are coming out of a sigmoid
+
+            # Compare with 0.5 elementwise
+            target = tf.fill(preds.get_shape(), 0.5, name='target')
+            val0 = tf.fill(preds.get_shape(), 0.0, name='val0')
+            val1 = tf.fill(preds.get_shape(), 1.0, name='val1')
+            cond = tf.less(preds, target)
+            preds = tf.select(cond, val0, val1)
             
             self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
             self.total_count = tf.reduce_sum(ground_truth)
