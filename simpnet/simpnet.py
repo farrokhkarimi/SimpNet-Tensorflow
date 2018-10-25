@@ -386,17 +386,17 @@ class SimpNet(object):
             self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
             self.total_count = tf.reduce_sum(ground_truth)
 
-            # Draw confusion matrix
-            checkpoint_dir = 'checkpoints/'
-            if(self.training == True):
-                checkpoint_dir += 'simpnet_train'
-            else:
-                checkpoint_dir += 'simpnet_test'
+            # # Draw confusion matrix
+            # checkpoint_dir = 'checkpoints/'
+            # if(self.training == True):
+            #     checkpoint_dir += 'simpnet_train'
+            # else:
+            #     checkpoint_dir += 'simpnet_test'
                     
-            img_d_summary_dir = os.path.join(checkpoint_dir, "summaries", "img")
-            img_d_summary_writer = tf.summary.FileWriter(img_d_summary_dir, sess.graph)
-            img_d_summary = self.plot_confusion_matrix(self.label, preds, self.class_list, tensor_name='dev/cm')
-            img_d_summary_writer.add_summary(img_d_summary, self.gstep)
+            # img_d_summary_dir = os.path.join(checkpoint_dir, "summaries", "img")
+            # img_d_summary_writer = tf.summary.FileWriter(img_d_summary_dir, sess.graph)
+            # img_d_summary = self.plot_confusion_matrix(self.label, preds, self.class_list, tensor_name='dev/cm')
+            # img_d_summary_writer.add_summary(img_d_summary, self.gstep)
 
     
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
