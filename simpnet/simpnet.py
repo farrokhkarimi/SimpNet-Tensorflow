@@ -43,7 +43,7 @@ class SimpNet(object):
 
         # Global step (times the graph seen the data)
         self.gstep = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
-
+        
         # Shows the overall graph status (Trainig vs Testing)
         self.training = True
 
@@ -365,7 +365,7 @@ class SimpNet(object):
 
         with tf.name_scope('summary'):
             tf.summary.scalar('loss', self.loss_val)
-            tf.summary.scalar('accuracy', self.accuracy)
+            tf.summary.scalar('accuracy', self.step_accuracy)
             tf.summary.histogram('loss histogram', self.loss_val)
             self.summary_op = tf.summary.merge_all()
 
@@ -385,7 +385,10 @@ class SimpNet(object):
             
             self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
             self.total_count = tf.reduce_sum(ground_truth)
-
+            
+            self.step_accuracy = tf.divide(self.true_predicted_count, self.total_count)
+            self.step_accuracy = tf.multiply(self.step_accuracy, tf.constant(100, dtype=tf.float32, shape=tf.shape(self.step_accuracy)), name="accuracy_builder")
+            
             # # Draw confusion matrix
             # checkpoint_dir = 'checkpoints/'
             # if(self.training == True):
@@ -414,7 +417,7 @@ class SimpNet(object):
             while True:
 
                 # Run the training graph nodes
-                _, step_loss, step_summary, true_predicted_count, total_count = sess.run([self.opt, self.loss_val, self.summary_op, self.true_predicted_count, self.total_count])
+                _, _, step_loss, step_summary, true_predicted_count, total_count = sess.run([self.step_accuracy, self.opt, self.loss_val, self.summary_op, self.true_predicted_count, self.total_count])
 
                 step += 1
                 total_loss += step_loss
@@ -437,9 +440,9 @@ class SimpNet(object):
         print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
 
         # Epoch accuracy
-        self.accuracy = (total_truth/total_total_count) * 100
+        accuracy = (total_truth/total_total_count) * 100
 
-        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, self.accuracy))
+        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
@@ -474,7 +477,7 @@ class SimpNet(object):
             while True:
 
                 # Test the network
-                true_predicted_count, total_count, step_summary = sess.run([self.true_predicted_count, self.total_count, self.summary_op])
+                _, true_predicted_count, total_count, step_summary = sess.run([self.step_accuracy, self.true_predicted_count, self.total_count, self.summary_op])
                 total_truth += true_predicted_count
                 total_total_count += total_count
                 n_batches += 1
@@ -483,8 +486,8 @@ class SimpNet(object):
         except tf.errors.OutOfRangeError:
             pass
 
-        self.accuracy = (total_truth / total_total_count) * 100
-        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, self.accuracy))
+        accuracy = (total_truth / total_total_count) * 100
+        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
 
