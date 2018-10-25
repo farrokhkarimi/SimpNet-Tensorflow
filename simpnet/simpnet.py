@@ -381,7 +381,7 @@ class SimpNet(object):
             val0 = tf.fill(tf.shape(preds), 0.0, name='val0')
             val1 = tf.fill(tf.shape(preds), 1.0, name='val1')
             cond = tf.less(preds, target)
-            preds = tf.select(cond, val0, val1)
+            preds = tf.where(cond, val0, val1)
             
             self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
             self.total_count = tf.reduce_sum(ground_truth)
