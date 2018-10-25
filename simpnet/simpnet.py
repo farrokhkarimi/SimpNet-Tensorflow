@@ -374,7 +374,7 @@ class SimpNet(object):
         with tf.name_scope('predict'):
             preds = tf.nn.sigmoid(self.logits)
 
-            ground_truth  = tf.equal(self.label, tf.ones(shape=tf.shape(preds)))
+            ground_truth  = tf.cast(tf.equal(self.label, tf.ones(shape=tf.shape(preds))), tf.float32)
 
             # Compare with 0.5 elementwise
             target = tf.fill(tf.shape(preds), 0.5, name='target')
