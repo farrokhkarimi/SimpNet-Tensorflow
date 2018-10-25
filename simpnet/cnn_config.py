@@ -7,8 +7,8 @@
 #
 # =======================================
 
-CNN_INPUT_HEIGHT = 224
-CNN_INPUT_WIDTH = 224
+CNN_INPUT_HEIGHT = 256
+CNN_INPUT_WIDTH = 256
 CNN_INPUT_CHANNELS = 1
 
 CONV1_NUM_FILTERS = 66
