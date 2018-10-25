@@ -105,7 +105,7 @@ class SimpNet(object):
                     print("Unable to read image", img)
                     continue
                 
-                a = cv2.resize(a, (256, 256))
+                a = cv2.resize(a, (224, 224))
 
                 # Normalize
                 a = a / 255.0
@@ -387,7 +387,7 @@ class SimpNet(object):
             self.total_count = tf.reduce_sum(ground_truth)
             
             self.step_accuracy = self.true_predicted_count
-            
+
             # # Draw confusion matrix
             # checkpoint_dir = 'checkpoints/'
             # if(self.training == True):
