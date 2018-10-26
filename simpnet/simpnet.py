@@ -375,32 +375,8 @@ class SimpNet(object):
         with tf.name_scope('predict'):
             preds = tf.nn.sigmoid(self.logits)
 
-            ground_truth  = tf.cast(tf.equal(self.label, tf.ones(shape=tf.shape(preds))), tf.float32)
-
-            # Compare with 0.5 elementwise
-            target = tf.fill(tf.shape(preds), 0.5, name='target')
-            val0 = tf.fill(tf.shape(preds), 0.0, name='val0')
-            val1 = tf.fill(tf.shape(preds), 1.0, name='val1')
-            cond = tf.less(preds, target)
-            preds = tf.where(cond, val0, val1)
-            
-            self.true_predicted_count = tf.reduce_sum(tf.cast(tf.equal(preds, ground_truth), tf.float32))
-            self.total_count = tf.reduce_sum(ground_truth)
-            
-            self.step_accuracy = self.true_predicted_count
-
-            # # Draw confusion matrix
-            # checkpoint_dir = 'checkpoints/'
-            # if(self.training == True):
-            #     checkpoint_dir += 'simpnet_train'
-            # else:
-            #     checkpoint_dir += 'simpnet_test'
-                    
-            # img_d_summary_dir = os.path.join(checkpoint_dir, "summaries", "img")
-            # img_d_summary_writer = tf.summary.FileWriter(img_d_summary_dir, sess.graph)
-            # img_d_summary = self.plot_confusion_matrix(self.label, preds, self.class_list, tensor_name='dev/cm')
-            # img_d_summary_writer.add_summary(img_d_summary, self.gstep)
-
+            correct_prediction = tf.equal(tf.round(preds), tf.round(self.label))
+            self.step_accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
     
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
@@ -410,20 +386,18 @@ class SimpNet(object):
 
         n_batches = 0
         total_loss = 0
-        total_truth = 0
-        total_total_count = 0
+        total_truths = 0
 
         try:
             while True:
 
                 # Run the training graph nodes
-                _, _, step_loss, step_summary, true_predicted_count, total_count = sess.run([self.step_accuracy, self.opt, self.loss_val, self.summary_op, self.true_predicted_count, self.total_count])
+                step_accuracy, _, step_loss, step_summary = sess.run([self.step_accuracy, self.opt, self.loss_val, self.summary_op])
 
                 step += 1
                 total_loss += step_loss
                 n_batches += 1
-                total_truth += true_predicted_count
-                total_total_count += total_count
+                total_truths += step_accuracy
 
                 writer.add_summary(step_summary, global_step=step)
 
@@ -437,12 +411,9 @@ class SimpNet(object):
             pass
 
         # Overall loss
-        print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
-
-        # Epoch accuracy
-        accuracy = (total_truth/total_total_count) * 100
-
-        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, accuracy))
+        print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches)))
+        # Epoch Accuracy
+        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, (total_truths/(n_batches * self.batch_size)) * 100))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
@@ -469,25 +440,22 @@ class SimpNet(object):
         print("[INFO]: Initialized Validation...")
         self.traininig = False
 
-        total_truth = 0
-        total_total_count = 0
         n_batches = 0
+        total_truths = 0
 
         try:
             while True:
 
                 # Test the network
-                _, true_predicted_count, total_count, step_summary = sess.run([self.step_accuracy, self.true_predicted_count, self.total_count, self.summary_op])
-                total_truth += true_predicted_count
-                total_total_count += total_count
+                step_accuracy, step_summary = sess.run([self.step_accuracy, self.true_predicted_count, self.total_count, self.summary_op])
                 n_batches += 1
+                total_truths += step_accuracy
                 writer.add_summary(step_summary, global_step=step)
 
         except tf.errors.OutOfRangeError:
             pass
 
-        accuracy = (total_truth / total_total_count) * 100
-        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, accuracy))
+        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, (total_truths/self.n_test) * 100)
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
 
