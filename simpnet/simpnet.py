@@ -24,7 +24,7 @@ class SimpNet(object):
     def __init__(self):
 
         # Dropout rate
-        self.keep_prob = 1
+        self.keep_prob = 0.9
 
         # Learning rate
         self.learning_rate = 0.001
@@ -192,7 +192,7 @@ class SimpNet(object):
             inputs=conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
-            stride=2,
+            stride=1,
             padding='SAME',
             scope_name='conv_2',
             keep_prob=self.keep_prob
