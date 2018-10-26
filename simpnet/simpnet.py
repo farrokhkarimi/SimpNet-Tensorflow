@@ -367,7 +367,7 @@ class SimpNet(object):
         with tf.name_scope('summary'):
             tf.summary.scalar('loss', self.loss_val)
             tf.summary.scalar('accuracy', self.step_accuracy)
-            tf.summary.histogram('loss histogram', self.loss_val)
+            # tf.summary.histogram('loss histogram', self.loss_val)
             self.summary_op = tf.summary.merge_all()
 
     def eval(self):
