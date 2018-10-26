@@ -105,7 +105,7 @@ class SimpNet(object):
                     print("Unable to read image", img)
                     continue
                 
-                a = cv2.resize(a, (256, 256))
+                a = cv2.resize(a, (224, 224))
                 a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
 
                 # Normalize
@@ -192,7 +192,7 @@ class SimpNet(object):
             inputs=conv1,
             filters=CONV2_NUM_FILTERS,
             k_size=CONV2_FILTER_SIZE,
-            stride=1,
+            stride=2,
             padding='SAME',
             scope_name='conv_2',
             keep_prob=self.keep_prob
