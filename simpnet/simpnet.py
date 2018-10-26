@@ -30,10 +30,10 @@ class SimpNet(object):
         self.learning_rate = 0.001
 
         # Setup the data path (folder should contain train and test folders inside itself)
-        self.data_path = '../images/'
-        self.main_csv = '../Data_Entry_2017.csv'
-        self.train_val_csv = shuffle_csv('../train_val_list.csv')
-        self.test_csv = shuffle_csv('../test_list.csv')
+        self.data_path = './images/images'
+        self.main_csv = './Data_Entry_2017.csv'
+        self.train_val_csv = shuffle_csv('./train_val_list.csv')
+        self.test_csv = shuffle_csv('./test_list.csv')
 
         # Number of images in each batch
         self.batch_size = 12
