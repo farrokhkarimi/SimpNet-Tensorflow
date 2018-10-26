@@ -373,8 +373,8 @@ class SimpNet(object):
     def eval(self):
 
         with tf.name_scope('predict'):
-            preds = tf.nn.sigmoid(self.logits)
 
+            preds = tf.nn.sigmoid(self.logits)
             correct_prediction = tf.equal(tf.round(preds), tf.round(self.label))
             self.step_accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
     
