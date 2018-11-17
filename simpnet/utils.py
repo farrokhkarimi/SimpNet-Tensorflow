@@ -19,10 +19,11 @@ def safe_mkdir(path):
 
 def shuffle_csv(path):
     """ Shuffle data lines inside a csv and return the new file path"""
-
+    
     with open(path, 'r') as source:
         data = [(random.random(), line) for line in source]
-
+    
+    data = data[0:15000]
     # Shuffle 
     data.sort()
 

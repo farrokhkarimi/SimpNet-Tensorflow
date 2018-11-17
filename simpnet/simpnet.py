@@ -17,23 +17,23 @@ from itertools import chain
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from utils import *
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 
 class SimpNet(object):
 
     def __init__(self):
 
         # Dropout rate
-        self.keep_prob = 0.9
+        self.keep_prob = 1.0
 
         # Learning rate
-        self.learning_rate = 0.001
+        self.learning_rate = 1e-5
 
         # Setup the data path (folder should contain train and test folders inside itself)
-        self.data_path = './images/images'
-        self.main_csv = './Data_Entry_2017.csv'
-        self.train_val_csv = shuffle_csv('./train_val_list.csv')
-        self.test_csv = shuffle_csv('./test_list.csv')
+        self.data_path = '../data/images/ROI_eq/'
+        self.main_csv = '../data/Data_Entry_2017.csv'
+        self.train_val_csv = shuffle_csv('../data/train_val_list.csv')
+        self.test_csv = shuffle_csv('../data/test_list.csv')
 
         # Number of images in each batch
         self.batch_size = 12
@@ -48,11 +48,14 @@ class SimpNet(object):
         self.training = True
 
         # Which steps show the loss in each epoch
-        self.skip_steps = 500
+        self.skip_steps = 50
 
         self.n_test = 25596
 
         self.train_list = pd.read_csv(self.main_csv)
+
+        # Sample the data for faster training
+        # self.train_list = self.train_list.sample(1000)
 
         self.class_list = ['Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia', 'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
 
@@ -105,66 +108,13 @@ class SimpNet(object):
                     print("Unable to read image", img)
                     continue
                 
-                a = cv2.resize(a, (224, 224))
-                a = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
+                a = cv2.resize(a, (256, 256))
 
                 # Normalize
                 a = a / 255.0
                 
+                # print("Data", a)
                 yield (np.array(a.flatten()), self.train_list.loc[self.train_list[self.train_list["Image Index"] == image].index.item(), self.all_labels].as_matrix())
-
-
-    def plot_confusion_matrix(correct_labels, predict_labels, labels, title='Confusion matrix', tensor_name = 'MyFigure/image', normalize=False):
-        ''' 
-        Parameters:
-            correct_labels                  : These are your true classification categories.
-            predict_labels                  : These are you predicted classification categories
-            labels                          : This is a lit of labels which will be used to display the axix labels
-            title='Confusion matrix'        : Title for your matrix
-            tensor_name = 'MyFigure/image'  : Name for the output summay tensor
-
-        Returns:
-            summary: TensorFlow summary 
-
-        Other itema to note:
-            - Depending on the number of category and the data , you may have to modify the figzie, font sizes etc. 
-            - Currently, some of the ticks dont line up due to rotations.
-        '''
-        cm = confusion_matrix(correct_labels, predict_labels, labels=labels)
-        if normalize:
-            cm = cm.astype('float')*10 / cm.sum(axis=1)[:, np.newaxis]
-            cm = np.nan_to_num(cm, copy=True)
-            cm = cm.astype('int')
-
-        np.set_printoptions(precision=2)
-        ###fig, ax = matplotlib.figure.Figure()
-
-        fig = matplotlib.figure.Figure(figsize=(7, 7), dpi=320, facecolor='w', edgecolor='k')
-        ax = fig.add_subplot(1, 1, 1)
-        im = ax.imshow(cm, cmap='Oranges')
-
-        classes = [re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', x) for x in labels]
-        classes = ['\n'.join(wrap(l, 40)) for l in classes]
-
-        tick_marks = np.arange(len(classes))
-
-        ax.set_xlabel('Predicted', fontsize=7)
-        ax.set_xticks(tick_marks)
-        c = ax.set_xticklabels(classes, fontsize=4, rotation=-90,  ha='center')
-        ax.xaxis.set_label_position('bottom')
-        ax.xaxis.tick_bottom()
-
-        ax.set_ylabel('True Label', fontsize=7)
-        ax.set_yticks(tick_marks)
-        ax.set_yticklabels(classes, fontsize=4, va ='center')
-        ax.yaxis.set_label_position('left')
-        ax.yaxis.tick_left()
-
-        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-            ax.text(j, i, format(cm[i, j], 'd') if cm[i,j]!=0 else '.', horizontalalignment="center", fontsize=6, verticalalignment='center', color= "black")
-        fig.set_tight_layout(True)
-        summary = tfplot.figure.to_summary(fig, tag=tensor_name)
-        return summary
 
 
     def build_network_graph(self):
@@ -357,27 +307,38 @@ class SimpNet(object):
     def optimize(self):
 
         with tf.name_scope('optimizer'):
+            # self.opt = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss_val, global_step=self.gstep)
             self.opt = tf.train.GradientDescentOptimizer(
-                learning_rate=self.learning_rate,
-                name='SGD'
+                 learning_rate=self.learning_rate,
+                 name='SGD'
             ).minimize(self.loss_val, global_step=self.gstep)
 
     def summary(self):
 
-        with tf.name_scope('summary'):
-            tf.summary.scalar('loss', self.loss_val)
-            tf.summary.scalar('accuracy', self.step_accuracy)
-            # tf.summary.histogram('loss histogram', self.loss_val)
+        with tf.name_scope('sumstep_accuracymary'):
+            tf.summary.scalar('step_accuracyloss', self.loss_val)
+            # tf.summary.scalar('step_accuracyaccuracy', self.step_accuracy)
+            # tf.summary.histogstep_accuracyram('loss histogram', self.loss_val)
             self.summary_op = tf.summary.merge_all()
 
     def eval(self):
 
         with tf.name_scope('predict'):
 
-            preds = tf.nn.sigmoid(self.logits)
-            correct_prediction = tf.equal(tf.round(preds), tf.round(self.label))
-            self.step_accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
-    
+            # preds = tf.round(self.logits)
+
+            # normalize_a = tf.nn.l2_normalize(self.logits,0)        
+            # normalize_b = tf.nn.l2_normalize(self.label,0)
+            
+            self.sigmoided_logits = tf.round(tf.cast(tf.nn.sigmoid(self.logits), tf.float32))
+            self.label = tf.round(tf.cast(self.label, tf.float32))
+
+            # self.step_accuracy=tf.reduce_sum(tf.multiply(normalize_a, normalize_b))
+            # self.step_accuracy = tf.reduce_sum(tf.cast(tf.equal(tf.round(tf.nn.sigmoid(self.logits)), tf.round(self.label)), dtype=tf.float32))
+
+            # self.ground_truth = tf.reduce_sum(tf.cast(self.label, tf.float32))
+            # self.step_accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
+
     def train_network_one_epoch(self, sess, init, saver, writer, epoch, step):
         start_time = time.time()
         sess.run(init)
@@ -386,34 +347,39 @@ class SimpNet(object):
 
         n_batches = 0
         total_loss = 0
-        total_truths = 0
+        total_accuracy = 0
 
         try:
             while True:
 
                 # Run the training graph nodes
-                step_accuracy, _, step_loss, step_summary = sess.run([self.step_accuracy, self.opt, self.loss_val, self.summary_op])
+                preds, label, _, step_loss, step_summary = sess.run([self.sigmoided_logits, self.label, self.opt, self.loss_val, self.summary_op])
 
                 step += 1
                 total_loss += step_loss
                 n_batches += 1
-                total_truths += step_accuracy
 
-                writer.add_summary(step_summary, global_step=step)
+
+                # print("preds: ", preds)
+                # print("labels: ", label)
+                
+                acc = accuracy_score(label, preds, normalize=True, sample_weight=None)
+                total_accuracy += acc
+
+                if(((step + 1) % self.skip_steps) == 0):
+                    print("[ACCURACY - TRAIN] at step {0}: {1}".format(step, acc))
+                    writer.add_summary(step_summary, global_step=step)
 
                 # Stepwise loss
-                if ((step + 1) % self.skip_steps) == 0:
-                    print("[LOSS - TRAIN (STEP)] at Step {0}: {1}".format(step, step_loss))
-                    # Save learned weights
-                    saver.save(sess, 'checkpoints/simpnet_train', step)
-
+                
+                # print("[LOSS - TRAIN (STEP)] at Step {0}: {1}".format(step, step_loss))
         except tf.errors.OutOfRangeError:
             pass
 
         # Overall loss
-        print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches)))
+        print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
         # Epoch Accuracy
-        print("[ACCURACY - TRAIN] at epoch {0}: {1}".format(epoch, (total_truths/(n_batches * self.batch_size)) * 100))
+        print("[ACCURACY - TRAIN] at Epoch {0}: {1}".format(epoch, total_accuracy/n_batches))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
@@ -454,18 +420,18 @@ class SimpNet(object):
 
         except tf.errors.OutOfRangeError:
             pass
-
-        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, (total_truths/self.n_test) * 100)
+        
+        print("[ACCURACY - VALIDATION] at Epoch {0}: {1}".format(epoch, (total_truths/self.n_test) * 100))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
 
 
     def train(self, n_epochs):
 
-        safe_mkdir('checkpoints')
-        safe_mkdir('checkpoints/simpnet_train')
-        train_writer = tf.summary.FileWriter('./graphs/simpnet_train', graph=tf.get_default_graph())
-        test_writer = tf.summary.FileWriter('./graphs/simpnet_test')
+        safe_mkdir('../results/checkpoints')
+        safe_mkdir('../results/checkpoints/simpnet_train')
+        train_writer = tf.summary.FileWriter('../results/graphs/simpnet_train', graph=tf.get_default_graph())
+        test_writer = tf.summary.FileWriter('../results/graphs/simpnet_test')
 
         with tf.Session() as sess:
 
@@ -476,7 +442,7 @@ class SimpNet(object):
             saver = tf.train.Saver()
 
             # Restore the checkpoints (in case of any!)
-            ckpt = tf.train.get_checkpoint_state('./checkpoints/')
+            ckpt = tf.train.get_checkpoint_state('../results/checkpoints/')
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 print("[INFO]: Reloaded From Checkpoints...")
@@ -497,13 +463,13 @@ class SimpNet(object):
                 )
 
                 # Evaluate the model after each epoch
-                self.evaluate_network(
-                    sess=sess,
-                    init=self.test_init,
-                    writer=test_writer,
-                    epoch=epoch,
-                    step=step
-                )
+                # self.evaluate_network(
+                #     sess=sess,
+                #     init=self.test_init,
+                #     writer=test_writer,
+                #     epoch=epoch,
+                #     step=step
+                # )
         train_writer.close()
         test_writer.close()
 
@@ -511,4 +477,4 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = '0, 1'
     model = SimpNet()
     model.build_network_graph()
-    model.train(n_epochs=50)
+    model.train(n_epochs=200)

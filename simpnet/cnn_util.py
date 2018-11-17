@@ -74,7 +74,7 @@ def saf_pool(inputs, k_size, stride, padding, scope_name):
         # Perform a Dropout
         saf_pooled = tf.nn.dropout(
             x=pooled,
-            keep_prob=0.8
+            keep_prob=1.0
         )
 
     return saf_pooled
