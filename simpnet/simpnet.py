@@ -17,7 +17,7 @@ from itertools import chain
 from cnn_util import conv_bn_sc_relu, saf_pool
 from cnn_config import *
 from utils import *
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 class SimpNet(object):
 
@@ -36,7 +36,7 @@ class SimpNet(object):
         self.test_csv = shuffle_csv('../data/test_list.csv')
 
         # Number of images in each batch
-        self.batch_size = 12
+        self.batch_size = 10
 
         # Number of classes
         self.n_classes = 14
@@ -349,25 +349,30 @@ class SimpNet(object):
         total_loss = 0
         total_accuracy = 0
 
+        appended_preds = pd.DataFrame(columns=self.class_list)
+        appended_labels = pd.DataFrame(columns=self.class_list)
+        
         try:
             while True:
 
                 # Run the training graph nodes
-                preds, label, _, step_loss, step_summary = sess.run([self.sigmoided_logits, self.label, self.opt, self.loss_val, self.summary_op])
+                preds, labels, _, step_loss, step_summary = sess.run([self.sigmoided_logits, self.label, self.opt, self.loss_val, self.summary_op])
 
                 step += 1
                 total_loss += step_loss
                 n_batches += 1
 
-
+                # Merge batch preds and labels
+                for prediction in preds:
+                    appended_preds.loc[len(appended_preds)] = prediction
+                
+                for label in labels:
+                    appended_labels.loc[len(appended_labels)] = label
+                    
                 # print("preds: ", preds)
                 # print("labels: ", label)
                 
-                acc = accuracy_score(label, preds, normalize=True, sample_weight=None)
-                total_accuracy += acc
-
                 if(((step + 1) % self.skip_steps) == 0):
-                    print("[ACCURACY - TRAIN] at step {0}: {1}".format(step, acc))
                     writer.add_summary(step_summary, global_step=step)
 
                 # Stepwise loss
@@ -379,7 +384,22 @@ class SimpNet(object):
         # Overall loss
         print("[LOSS - TRAIN (EPOCH)] at Epoch {0}: {1}".format(epoch, total_loss/n_batches))
         # Epoch Accuracy
-        print("[ACCURACY - TRAIN] at Epoch {0}: {1}".format(epoch, total_accuracy/n_batches))
+        
+        class_scores = np.zeros(shape=len(self.class_list))
+
+        for class_idx in range(len(self.class_list)):
+            class_name = self.class_list[class_idx]
+            class_scores[class_idx] = roc_auc_score(appended_labels[class_name], appended_preds[class_name])
+
+        avg_accuracy = np.mean(class_scores)
+        print("\n**************************************")
+        print("[CLASS ROC-AUC SCORES]: ")
+        for class_idx in range(len(self.class_list)):
+            class_name = self.class_list[class_idx]
+            print("{0} -> {1}".format(class_name, class_scores[class_idx]))
+
+        print("**************************************\n")
+        print("[ACCURACY - TRAIN] at Epoch {0}: {1}".format(epoch, avg_accuracy))
         print("[TIMING] Took {0} Seconds...".format(time.time() - start_time))
 
         return step
