@@ -36,7 +36,7 @@ class SimpNet(object):
         self.test_csv = shuffle_csv('../data/test_list.csv')
 
         # Number of images in each batch
-        self.batch_size = 10
+        self.batch_size = 20
 
         # Number of classes
         self.n_classes = 14
@@ -49,6 +49,8 @@ class SimpNet(object):
 
         # Which steps show the loss in each epoch
         self.skip_steps = 50
+
+        self.result_step = 2000 / self.batch_size
 
         self.n_test = 25596
 
@@ -356,7 +358,7 @@ class SimpNet(object):
             while True:
 
                 # Run the training graph nodes
-                preds, labels, _, step_loss, step_summary = sess.run([self.sigmoided_logits, self.label, self.opt, self.loss_val, self.summary_op])
+                actual_img, preds, labels, _, step_loss, step_summary = sess.run([self.img, self.sigmoided_logits, self.label, self.opt, self.loss_val, self.summary_op])
 
                 step += 1
                 total_loss += step_loss
@@ -374,6 +376,16 @@ class SimpNet(object):
                 
                 if(((step + 1) % self.skip_steps) == 0):
                     writer.add_summary(step_summary, global_step=step)
+                
+                # Save result predictions
+                if(((step + 1) % self.result_step) == 0):
+
+                    # Save its predicted vector
+                    with open('../results/vis/predicted_vectors.txt', 'a') as predfile:
+                        what_to_write = "epoch pred: " + str(epoch) + ": " + str(preds[0]) + '\n'
+                        gt_writer = "epoch grnd: " + str(epoch) + ": " + str(labels[0]) + '\n'
+                        predfile.write(what_to_write)
+                        predfile.write(gt_writer)
 
                 # Stepwise loss
                 
